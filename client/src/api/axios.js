@@ -1,22 +1,42 @@
-import axios from 'axios';
+import Axios from "axios";
 
-const api = axios.create({
-    baseURL: 'http://localhost:8000/api', // Ajustar según el host/puerto del backend
-    headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-    }
+// Helpers para gestionar el token
+export const getToken = () => localStorage.getItem("access_token");
+export const setToken = (token) => localStorage.setItem("access_token", token);
+export const clearToken = () => localStorage.removeItem("access_token");
+
+const getBaseURL = () => {
+  const envUrl = import.meta.env.VITE_APP_BACKEND_URL;
+  return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
+};
+
+const axios = Axios.create({
+  baseURL: getBaseURL(),
+  headers: {
+    "X-Requested-With": "XMLHttpRequest",
+  },
 });
 
-// Interceptor para añadir el token en cada petición
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token_sesion');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+// Interceptor para añadir el token Bearer en cada petición
+axios.interceptors.request.use((config) => {
+  const token = getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Interceptor para manejar errores 401
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      clearToken();
+      // Redirigir a login
+      window.location.href = "/login";
     }
-    return config;
-}, (error) => {
     return Promise.reject(error);
-});
+  },
+);
 
-export default api;
+export default axios;

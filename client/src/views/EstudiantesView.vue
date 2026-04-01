@@ -22,7 +22,7 @@ const formulario = reactive({
 async function cargarEstudiantes() {
   cargando.value = true;
   try {
-    const respuesta = await api.get('/estudiantes');
+    const respuesta = await api.get('estudiantes');
     estudiantes.value = respuesta.data;
   } catch (error) {
     console.error('Error al cargar alumnos:', error);
@@ -53,9 +53,9 @@ function abrirModal(estudiante = null) {
 async function guardarEstudiante() {
   try {
     if (editando.value) {
-      await api.put(`/estudiantes/${formulario.id}`, formulario);
+      await api.put(`estudiantes/${formulario.id}`, formulario);
     } else {
-      await api.post('/estudiantes', formulario);
+      await api.post('estudiantes', formulario);
     }
     await cargarEstudiantes();
     mostrarModal.value = false;
@@ -67,7 +67,7 @@ async function guardarEstudiante() {
 async function eliminarEstudiante(id) {
   if (confirm('¿Estás seguro de eliminar a este registro? Se borrarán también sus facturas.')) {
     try {
-      await api.delete(`/estudiantes/${id}`);
+      await api.delete(`estudiantes/${id}`);
       await cargarEstudiantes();
     } catch (error) {
       alert('Error al eliminar');
@@ -151,7 +151,7 @@ onMounted(cargarEstudiantes);
           <button @click="mostrarModal = false" class="text-slate-400 hover:text-slate-600">✕</button>
         </div>
         
-        <form @submit.prevent="guardarEstudiante" class="p-6 space-y-4">
+        <form @submit.prevent="guardarEstudiante" novalidate class="p-6 space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div class="col-span-2">
               <label class="block text-sm font-medium text-slate-700 mb-1">Tipo de Cliente</label>
