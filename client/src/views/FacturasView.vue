@@ -11,6 +11,7 @@ import { confirmDialog, notifyError, toast } from "@/utils/swal";
 const authStore = useAuthStore();
 const clienteStore = useClienteStore();
 const facturaStore = useFacturaStore();
+const backendUrl = import.meta.env.VITE_APP_BACKEND_URL;
 
 const { clientes } = storeToRefs(clienteStore);
 const {
@@ -270,7 +271,7 @@ onMounted(cargarDatos);
             <td class="px-6 py-4 text-center">
               <div class="flex justify-center gap-2">
                 <a
-                  :href="`${$backendUrl}/api/facturas/${factura.id}/pdf?token=${authStore.token()}`"
+                  :href="`${backendUrl}/facturas/${factura.id}/pdf?token=${authStore.token()}`"
                   target="_blank"
                   class="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded border border-blue-200 text-xs font-bold transition"
                 >
