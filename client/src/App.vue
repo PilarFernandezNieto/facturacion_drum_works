@@ -32,8 +32,8 @@ const handleLogout = () => {
       <nav class="flex-1 p-4 space-y-2">
         <router-link
           :to="{ name: 'dashboard' }"
-          class="flex items-center px-4 py-3 rounded-lg text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition group"
-          active-class="bg-blue-600 !text-white shadow-md shadow-blue-200"
+          class="flex items-center px-4 py-3 rounded-lg hover:bg-principal-50 hover:text-slate-900 transition group"
+          active-class="bg-principal !text-white shadow-sm shadow-principal-50"
         >
           <span class="font-medium">Inicio</span>
         </router-link>
@@ -68,7 +68,7 @@ const handleLogout = () => {
     <!-- Contenido Principal -->
     <main class="ml-64 flex-1 p-8">
       <header class="mb-8 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-slate-800">
+        <h1>
           {{
             $route.name === "dashboard"
               ? "Bienvenido al Panel"

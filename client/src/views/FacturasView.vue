@@ -126,7 +126,7 @@ onMounted(cargarDatos);
   <div class="space-y-6">
     <div class="flex justify-between items-center">
       <div>
-        <h2 class="text-lg font-bold text-slate-800">Control de Facturación</h2>
+        <h2>Control de Facturación</h2>
         <p class="text-sm text-slate-500">
           Gestiona tus ingresos de clases (C) y bolos (B).
         </p>
@@ -270,7 +270,7 @@ onMounted(cargarDatos);
             <td class="px-6 py-4 text-center">
               <div class="flex justify-center gap-2">
                 <a
-                  :href="`http://127.0.0.1:8000/api/facturas/${factura.id}/pdf?token=${authStore.token()}`"
+                  :href="`${$backendUrl}/api/facturas/${factura.id}/pdf?token=${authStore.token()}`"
                   target="_blank"
                   class="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded border border-blue-200 text-xs font-bold transition"
                 >
@@ -291,7 +291,7 @@ onMounted(cargarDatos);
             <td colspan="6" class="px-6 py-12 text-center text-slate-400">
               {{
                 isLoading
-                  ? "isLoading facturas..."
+                  ? "Cargando facturas..."
                   : "No hay facturas en el historial."
               }}
             </td>

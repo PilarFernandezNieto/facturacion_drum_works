@@ -95,7 +95,7 @@ onMounted(() => {
       class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
     >
       <div>
-        <h2 class="text-2xl font-bold text-slate-800">Gestión de Clientes</h2>
+        <h2>Gestión de Clientes</h2>
         <p class="text-slate-500">
           Administra tus alumnos de clases y tus clientes de bolos.
         </p>

@@ -55,78 +55,80 @@ onMounted(cargarStats);
 </script>
 
 <template>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <!-- Tarjeta Clientes -->
-    <div
-      class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between"
-    >
-      <span
-        class="text-slate-400 text-sm font-semibold uppercase tracking-wider"
-        >Total Clientes</span
+  <div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Tarjeta Clientes -->
+      <div
+        class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between"
       >
-      <div class="flex items-end justify-between mt-4">
-        <h3 class="text-4xl font-bold text-slate-800">{{ totalClientes }}</h3>
-        <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">👥</div>
-      </div>
-    </div>
-
-    <!-- Tarjeta Recaudado -->
-    <div
-      class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between"
-    >
-      <span
-        class="text-slate-400 text-sm font-semibold uppercase tracking-wider"
-        >Recaudado (Mes)</span
-      >
-      <div class="flex items-end justify-between mt-4">
-        <h3 class="text-4xl font-bold text-emerald-600">
-          {{ recaudadoMes.toFixed(2) }}€
-        </h3>
-        <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">💰</div>
-      </div>
-    </div>
-
-    <!-- Tarjeta Pendientes -->
-    <div
-      class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between"
-    >
-      <span
-        class="text-slate-400 text-sm font-semibold uppercase tracking-wider"
-        >Facturas Pendientes</span
-      >
-      <div class="flex items-end justify-between mt-4">
-        <h3 class="text-4xl font-bold text-amber-600">
-          {{ facturasPendientes }}
-        </h3>
-        <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">📄</div>
-      </div>
-    </div>
-  </div>
-
-  <div
-    class="mt-12 bg-blue-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl shadow-blue-200"
-  >
-    <div class="relative z-10 max-w-lg">
-      <h2 class="text-2xl font-bold mb-4">Empieza a trabajar</h2>
-      <p class="text-blue-100 mb-6">
-        Añade clientes a tu panel y genera todas las facturas del mes con un
-        solo clic en la sección de facturas.
-      </p>
-      <div class="flex gap-4">
-        <router-link
-          :to="{ name: 'clientes' }"
-          class="bg-white text-blue-600 px-6 py-2 rounded-xl font-bold hover:bg-blue-50 transition"
-          >Gestionar Clientes</router-link
+        <span
+          class="text-slate-400 text-sm font-semibold uppercase tracking-wider"
+          >Total Clientes</span
         >
-        <router-link
-          :to="{ name: 'facturas' }"
-          class="bg-blue-500 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-400 transition"
-          >Ver Facturación</router-link
+        <div class="flex items-end justify-between mt-4">
+          <h3 class="text-4xl font-bold text-slate-800">{{ totalClientes }}</h3>
+          <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">👥</div>
+        </div>
+      </div>
+
+      <!-- Tarjeta Recaudado -->
+      <div
+        class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between"
+      >
+        <span
+          class="text-slate-400 text-sm font-semibold uppercase tracking-wider"
+          >Recaudado (Mes)</span
         >
+        <div class="flex items-end justify-between mt-4">
+          <h3 class="text-4xl font-bold text-emerald-600">
+            {{ recaudadoMes.toFixed(2) }}€
+          </h3>
+          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">💰</div>
+        </div>
+      </div>
+
+      <!-- Tarjeta Pendientes -->
+      <div
+        class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between"
+      >
+        <span
+          class="text-slate-400 text-sm font-semibold uppercase tracking-wider"
+          >Facturas Pendientes</span
+        >
+        <div class="flex items-end justify-between mt-4">
+          <h3 class="text-4xl font-bold text-amber-600">
+            {{ facturasPendientes }}
+          </h3>
+          <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">📄</div>
+        </div>
       </div>
     </div>
+
     <div
-      class="absolute -right-20 -bottom-20 w-80 h-80 bg-blue-500 rounded-full opacity-50 blur-3xl"
-    ></div>
+      class="mt-12 rounded-3xl p-8 border border-principal relative overflow-hidden shadow-lg shadow-principal-200"
+    >
+      <div class="relative z-10 max-w-lg">
+        <h2>Empieza a trabajar</h2>
+        <p class="mb-6">
+          Añade clientes a tu panel y genera todas las facturas del mes con un
+          solo clic en la sección de facturas.
+        </p>
+        <div class="flex gap-4">
+          <router-link
+            :to="{ name: 'clientes' }"
+            class="bg-white text-principal px-6 py-2 rounded-xl font-bold hover:bg-blue-50 transition"
+            >Gestionar Clientes</router-link
+          >
+          <router-link
+            :to="{ name: 'facturas' }"
+            class="bg-principal text-white px-6 py-2 rounded-xl font-bold hover:bg-principal-hover transition"
+            >Ver Facturación</router-link
+          >
+        </div>
+      </div>
+      <div
+        class="absolute -right-20 -bottom-20 w-80 h-80 bg-principal-100 rounded-full opacity-50 blur-3xl"
+      ></div>
+    </div>
   </div>
 </template>

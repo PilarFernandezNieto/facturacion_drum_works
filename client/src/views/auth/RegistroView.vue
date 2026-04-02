@@ -25,7 +25,7 @@ const manejarRegistro = async () =>
   <div class="min-h-screen flex items-center justify-center bg-slate-100 px-4">
     <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
       <div class="text-center mb-10">
-        <h1 class="text-3xl font-bold text-slate-800">Crear Cuenta</h1>
+        <h1>Crear Cuenta</h1>
         <p class="text-slate-500 mt-2">Únete para gestionar tu academia</p>
       </div>
 

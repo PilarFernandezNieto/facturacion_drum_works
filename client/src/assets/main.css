@@ -1,15 +1,45 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
-:root {
-  --font-family: "Inter", sans-serif;
+
+@theme {
+  --font-inter: "Inter", sans-serif;
+  --color-principal: #a30000;
+  --color-principal-50: #ffd6d6;
+  --color-principal-100: #ff9999;
+  --color-principal-200: #ff1f1f;
+  --color-principal-hover: #7a0000;
 }
 
-body {
-  @apply bg-slate-50 text-slate-900 min-h-screen;
-  font-family: var(--font-family);
+@layer base {
+  body {
+    /* Usamos variables que Tailwind ya provee o las tuyas */
+    background-color: var(--color-slate-50);
+    color: var(--color-slate-900);
+    min-height: 100vh;
+    font-family: var(--font-inter);
+  }
+
+  h1 {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    color: var(--color-principal);
+  }
+
+  h2 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    color: var(--color-principal);
+  }
+
+  h3 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-bold);
+  }
 }
 
 #app {
-  @apply min-h-screen;
+  min-height: 100vh;
 }
