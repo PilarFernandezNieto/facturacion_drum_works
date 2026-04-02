@@ -2,6 +2,7 @@
 import { ref, onMounted, reactive, computed } from "vue";
 import api from "@/api/axios";
 import { useAuthStore } from "@/stores/auth";
+import { useFacturaStore } from "@/stores/factura";
 import { storeToRefs } from "pinia";
 import { useClienteStore } from "@/stores/cliente";
 
@@ -9,11 +10,18 @@ import { confirmDialog, notifyError, toast } from "@/utils/swal";
 
 const authStore = useAuthStore();
 const clienteStore = useClienteStore();
-const { clientes } = storeToRefs(clienteStore);
+const facturaStore = useFacturaStore();
 
-const facturas = ref([]);
-const isLoading = ref(true);
-const generando = ref(false);
+const { clientes } = storeToRefs(clienteStore);
+const {
+  isLoading,
+  generando,
+  filtroMes,
+  filtroEstado,
+  mesesDisponibles,
+  facturasFiltradas,
+} = storeToRefs(facturaStore);
+
 const mostrarModalBolo = ref(false);
 
 const formularioBolo = reactive({
@@ -33,18 +41,14 @@ const totalBolo = computed(() => {
   return (base + iva - irpf).toFixed(2);
 });
 
-async function cargarFacturas() {
-  isLoading.value = true;
+async function cargarDatos() {
   try {
-    const [resFacturas] = await Promise.all([
-      api.get("facturas"),
+    await Promise.all([
+      facturaStore.cargarFacturas(),
       clienteStore.cargarClientes(),
     ]);
-    facturas.value = resFacturas.data;
   } catch (error) {
-    console.error("Error:", error);
-  } finally {
-    isLoading.value = false;
+    console.error("Error al inicializar datos:", error);
   }
 }
 
@@ -56,28 +60,19 @@ async function generarMasiva() {
   );
   if (!result.isConfirmed) return;
 
-  generando.value = true;
   try {
-    const r = await api.post("facturas/generar-masiva");
-    toast(r.data.mensaje);
-    await cargarFacturas();
+    const r = await facturaStore.generarMasiva();
+    toast(r.mensaje);
   } catch (error) {
     notifyError("Error", "No se pudieron generar las facturas.");
-  } finally {
-    generando.value = false;
   }
 }
 
 async function guardarBolo() {
   try {
-    const payload = {
-      ...formularioBolo,
-      serie: "B",
-    };
-    await api.post("facturas", payload);
+    await facturaStore.guardarBolo(formularioBolo);
     toast("Factura B generada con éxito");
     mostrarModalBolo.value = false;
-    await cargarFacturas();
     // Limpiar formulario
     formularioBolo.cliente_id = "";
     formularioBolo.subtotal = 0;
@@ -85,17 +80,6 @@ async function guardarBolo() {
     formularioBolo.fecha_evento = "";
   } catch (error) {
     notifyError("Error", "Error al guardar factura de bolo.");
-  }
-}
-
-async function cambiarEstado(factura) {
-  const nuevoEstado = factura.estado === "pendiente" ? "pagada" : "pendiente";
-  try {
-    await api.put(`facturas/${factura.id}/estado`, { estado: nuevoEstado });
-    factura.estado = nuevoEstado;
-    toast(`Factura marcada como ${nuevoEstado}`);
-  } catch (error) {
-    notifyError("Error", "No se pudo cambiar el estado.");
   }
 }
 
@@ -108,11 +92,22 @@ async function eliminarFactura(id) {
   if (!result.isConfirmed) return;
 
   try {
-    await api.delete(`facturas/${id}`);
+    await facturaStore.eliminarFactura(id);
     toast("Factura eliminada");
-    await cargarFacturas();
   } catch (e) {
     notifyError("Error", "No se pudo eliminar.");
+  }
+}
+
+async function toggleEstado(factura) {
+  try {
+    const { nuevoEstado } = await facturaStore.cambiarEstado(
+      factura.id,
+      factura.estado,
+    );
+    toast(`Factura marcada como ${nuevoEstado}`);
+  } catch (error) {
+    notifyError("Error", "No se pudo cambiar el estado.");
   }
 }
 
@@ -124,7 +119,7 @@ function formatearFecha(fecha) {
   });
 }
 
-onMounted(cargarFacturas);
+onMounted(cargarDatos);
 </script>
 
 <template>
@@ -154,6 +149,57 @@ onMounted(cargarFacturas);
       </div>
     </div>
 
+    <!-- Filtros -->
+    <div
+      class="bg-white p-4 rounded-xl border border-slate-200 flex flex-wrap gap-6 items-center shadow-sm"
+    >
+      <div class="flex items-center gap-3">
+        <label
+          class="text-[10px] font-black text-slate-400 uppercase tracking-widest"
+          >Filtrar por Mes</label
+        >
+        <select
+          v-model="filtroMes"
+          class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 font-medium cursor-pointer"
+        >
+          <option value="">Todos los meses</option>
+          <option v-for="m in mesesDisponibles" :key="m" :value="m">
+            {{ facturaStore.nombreMes(m) }}
+          </option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-3 border-l border-slate-100 pl-6">
+        <label
+          class="text-[10px] font-black text-slate-400 uppercase tracking-widest"
+          >Estado de Pago</label
+        >
+        <select
+          v-model="filtroEstado"
+          class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 font-bold cursor-pointer"
+        >
+          <option value="">Cualquier estado</option>
+          <option value="pendiente" class="text-amber-600 font-bold">
+            PENDIENTE
+          </option>
+          <option value="pagada" class="text-emerald-600 font-bold">
+            PAGADA
+          </option>
+        </select>
+      </div>
+
+      <button
+        v-if="filtroMes || filtroEstado"
+        @click="
+          filtroMes = '';
+          filtroEstado = '';
+        "
+        class="ml-auto text-xs font-bold text-red-500 hover:text-red-700 flex items-center gap-1 transition"
+      >
+        ✕ Limpiar filtros
+      </button>
+    </div>
+
     <!-- Lista de Facturas -->
     <div
       class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
@@ -177,9 +223,9 @@ onMounted(cargarFacturas);
             </th>
           </tr>
         </thead>
-        <tbody v-if="!isLoading && facturas.length">
+        <tbody v-if="!isLoading && facturasFiltradas.length">
           <tr
-            v-for="factura in facturas"
+            v-for="factura in facturasFiltradas"
             :key="factura.id"
             class="border-b border-slate-50 hover:bg-slate-50/50 transition"
           >
@@ -210,7 +256,7 @@ onMounted(cargarFacturas);
             </td>
             <td class="px-6 py-4 text-center">
               <span
-                @click="cambiarEstado(factura)"
+                @click="toggleEstado(factura)"
                 :class="
                   factura.estado === 'pendiente'
                     ? 'bg-amber-100 text-amber-700'

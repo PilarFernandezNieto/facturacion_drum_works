@@ -3,7 +3,7 @@ import { ref, onMounted, reactive, computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useClienteStore } from "@/stores/cliente";
 
-import { confirmDialog, notifyError, toast } from '@/utils/swal';
+import { confirmDialog, notifyError, toast } from "@/utils/swal";
 
 const clienteStore = useClienteStore();
 const { clientes, isLoading } = storeToRefs(clienteStore);
@@ -52,16 +52,16 @@ async function guardarCliente() {
   try {
     if (editando.value) {
       await clienteStore.actualizarCliente(formulario.id, formulario);
-      toast('Cliente actualizado');
+      toast("Cliente actualizado");
     } else {
       await clienteStore.agregarCliente(formulario);
-      toast('Cliente creado');
+      toast("Cliente creado");
     }
     mostrarModal.value = false;
   } catch (error) {
     notifyError(
       "Error al guardar",
-      error.response?.data?.error || "Revisa los campos"
+      error.response?.data?.error || "Revisa los campos",
     );
   }
 }
@@ -69,13 +69,13 @@ async function guardarCliente() {
 async function eliminarCliente(id) {
   const result = await confirmDialog(
     "¿Eliminar cliente?",
-    "¿Estás seguro de eliminar a este registro? Se borrarán también sus facturas."
+    "¿Estás seguro de eliminar a este registro? Se borrarán también sus facturas.",
   );
 
   if (result.isConfirmed) {
     try {
       await clienteStore.eliminarCliente(id);
-      toast('Cliente eliminado', 'success');
+      toast("Cliente eliminado", "success");
     } catch (error) {
       notifyError("Error", "No se pudo eliminar el cliente");
     }
@@ -132,7 +132,7 @@ onMounted(() => {
         "
         class="px-4 py-2 rounded-lg text-sm font-bold transition"
       >
-        Alumnos
+        Clases
       </button>
       <button
         @click="filtroTipo = 'bolo'"
