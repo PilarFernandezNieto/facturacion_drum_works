@@ -43,7 +43,7 @@ const pageTitle = computed(() => route.meta?.title ?? "");
         {{ user?.name }}
       </span>
       <div
-        class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-principal font-bold uppercase border-2 border-white shadow-sm"
+        class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-principal font-bold uppercase border-2 border-white shadow-sm"
       >
         {{ user?.name?.charAt(0) }}
       </div>

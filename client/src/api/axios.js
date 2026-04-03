@@ -1,4 +1,6 @@
 import Axios from "axios";
+import { useRouter } from "vue-router";
+const router = useRouter();
 
 // Helpers para gestionar el token
 export const getToken = () => localStorage.getItem("access_token");
@@ -33,7 +35,7 @@ axios.interceptors.response.use(
     if (error.response?.status === 401) {
       clearToken();
       // Redirigir a login
-      window.location.href = "/login";
+      router.replace({ name: "login" });
     }
     return Promise.reject(error);
   },

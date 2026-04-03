@@ -1,12 +1,12 @@
 <script setup>
 import { ref, onMounted, reactive, computed } from "vue";
-import api from "@/api/axios";
 import { useAuthStore } from "@/stores/auth";
 import { useFacturaStore } from "@/stores/factura";
 import { storeToRefs } from "pinia";
 import { useClienteStore } from "@/stores/cliente";
 
 import { confirmDialog, notifyError, toast } from "@/utils/swal";
+import ScreenLoader from "@/components/ui/ScreenLoader.vue";
 
 const authStore = useAuthStore();
 const clienteStore = useClienteStore();
@@ -124,7 +124,11 @@ onMounted(cargarDatos);
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div v-if="isLoading">
+    <ScreenLoader />
+  </div>
+
+  <div v-else class="space-y-6">
     <div class="flex justify-between items-center">
       <div>
         <h2>Control de Facturación</h2>
@@ -142,9 +146,9 @@ onMounted(cargarDatos);
         <button
           @click="generarMasiva"
           :disabled="generando"
-          class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-bold transition shadow-lg shadow-blue-100 disabled:opacity-50 flex items-center gap-2"
+          class="bg-principal hover:bg-principal-hover text-white px-5 py-2 rounded-lg font-bold transition shadow-lg shadow-principal-100 disabled:opacity-50 flex items-center gap-2"
         >
-          <span v-if="!generando">⚡ Generar Clases (Mes)</span>
+          <span v-if="!generando">⚡ Generar Facturas Clases (Mes)</span>
           <span v-else>Generando...</span>
         </button>
       </div>
@@ -159,6 +163,7 @@ onMounted(cargarDatos);
           class="text-[10px] font-black text-slate-400 uppercase tracking-widest"
           >Filtrar por Mes</label
         >
+
         <select
           v-model="filtroMes"
           class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 font-medium cursor-pointer"
@@ -224,7 +229,7 @@ onMounted(cargarDatos);
             </th>
           </tr>
         </thead>
-        <tbody v-if="!isLoading && facturasFiltradas.length">
+        <tbody v-if="facturasFiltradas.length">
           <tr
             v-for="factura in facturasFiltradas"
             :key="factura.id"
@@ -239,7 +244,7 @@ onMounted(cargarDatos);
               <div class="font-medium text-slate-800">
                 {{ factura.cliente?.nombre }}
               </div>
-              <div class="text-xs text-slate-400 truncate max-w-[200px]">
+              <div class="text-xs text-slate-400 truncate max-w-60">
                 {{ factura.concepto }}
               </div>
             </td>
@@ -269,11 +274,11 @@ onMounted(cargarDatos);
               </span>
             </td>
             <td class="px-6 py-4 text-center">
-              <div class="flex justify-center gap-2">
+              <div class="flex justify-center items-center gap-2">
                 <a
                   :href="`${backendUrl}/facturas/${factura.id}/pdf?token=${authStore.token()}`"
                   target="_blank"
-                  class="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded border border-blue-200 text-xs font-bold transition"
+                  class="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded border border-blue-200 text-sm font-bold transition"
                 >
                   PDF
                 </a>
@@ -281,7 +286,30 @@ onMounted(cargarDatos);
                   @click="eliminarFactura(factura.id)"
                   class="text-red-400 hover:text-principal text-xs"
                 >
-                  Eliminar
+                  <svg
+                    width="30px"
+                    height="30px"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    stroke="#dc2626"
+                  >
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g
+                      id="SVGRepo_tracerCarrier"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></g>
+                    <g id="SVGRepo_iconCarrier">
+                      <path
+                        d="M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6M18 6V16.2C18 17.8802 18 18.7202 17.673 19.362C17.3854 19.9265 16.9265 20.3854 16.362 20.673C15.7202 21 14.8802 21 13.2 21H10.8C9.11984 21 8.27976 21 7.63803 20.673C7.07354 20.3854 6.6146 19.9265 6.32698 19.362C6 18.7202 6 17.8802 6 16.2V6M14 10V17M10 10V17"
+                        stroke="#dc2626"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></path>
+                    </g>
+                  </svg>
                 </button>
               </div>
             </td>
@@ -290,11 +318,7 @@ onMounted(cargarDatos);
         <tbody v-else>
           <tr>
             <td colspan="6" class="px-6 py-12 text-center text-slate-400">
-              {{
-                isLoading
-                  ? "Cargando facturas..."
-                  : "No hay facturas en el historial."
-              }}
+              No hay facturas en el historial.
             </td>
           </tr>
         </tbody>
