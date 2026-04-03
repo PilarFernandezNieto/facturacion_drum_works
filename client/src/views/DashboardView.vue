@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from "vue";
 import api from "@/api/axios";
 import { storeToRefs } from "pinia";
 import { useClienteStore } from "@/stores/cliente";
+import TarjetaDashboard from "@/components/ui/TarjetaDashboard.vue";
 
 const clienteStore = useClienteStore();
 const { clientes } = storeToRefs(clienteStore);
@@ -58,50 +59,23 @@ onMounted(cargarStats);
   <div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <!-- Tarjeta Clientes -->
-      <div
-        class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between"
-      >
-        <span
-          class="text-slate-400 text-sm font-semibold uppercase tracking-wider"
-          >Total Clientes</span
-        >
-        <div class="flex items-end justify-between mt-4">
-          <h3 class="text-4xl font-bold text-slate-800">{{ totalClientes }}</h3>
-          <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">👥</div>
-        </div>
-      </div>
+      <TarjetaDashboard label="Tarjeta Clientes" :value="totalClientes">
+        <template #icon> 👥 </template>
+      </TarjetaDashboard>
 
       <!-- Tarjeta Recaudado -->
-      <div
-        class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between"
+      <TarjetaDashboard
+        label="Recadudado Mes"
+        :value="recaudadoMes.toFixed(2)"
+        value-class="text-emerald-600"
       >
-        <span
-          class="text-slate-400 text-sm font-semibold uppercase tracking-wider"
-          >Recaudado (Mes)</span
-        >
-        <div class="flex items-end justify-between mt-4">
-          <h3 class="text-4xl font-bold text-emerald-600">
-            {{ recaudadoMes.toFixed(2) }}€
-          </h3>
-          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">💰</div>
-        </div>
-      </div>
+        <template #icon> 💰 </template>
+      </TarjetaDashboard>
 
       <!-- Tarjeta Pendientes -->
-      <div
-        class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between"
-      >
-        <span
-          class="text-slate-400 text-sm font-semibold uppercase tracking-wider"
-          >Facturas Pendientes</span
-        >
-        <div class="flex items-end justify-between mt-4">
-          <h3 class="text-4xl font-bold text-amber-600">
-            {{ facturasPendientes }}
-          </h3>
-          <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">📄</div>
-        </div>
-      </div>
+      <TarjetaDashboard label="Facturas Pendientes" :value="facturasPendientes">
+        <template #icon> 📄 </template>
+      </TarjetaDashboard>
     </div>
 
     <div

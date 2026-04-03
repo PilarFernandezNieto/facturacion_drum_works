@@ -3,6 +3,7 @@ import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import InputError from "@/components/InputError.vue";
+import PrimaryButton from "@/components/buttons/PrimaryButton.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -87,25 +88,21 @@ const manejarRegistro = async () =>
 
         <div
           v-if="errors.message"
-          class="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200"
+          class="bg-red-50 text-principal p-3 rounded-lg text-sm border border-red-200"
         >
           {{ errors.message }}
         </div>
 
-        <button
-          type="submit"
-          :disabled="processing"
-          class="w-full bg-red-700 hover:bg-red-800 text-white font-semibold py-3 rounded-lg transition shadow-lg shadow-blue-200 disabled:opacity-50"
-        >
+        <PrimaryButton type="submit" :disabled="processing">
           {{ processing ? "Registrando..." : "Empezar ahora" }}
-        </button>
+        </PrimaryButton>
       </form>
 
       <div class="mt-8 text-center text-sm text-slate-600">
         ¿Ya tienes cuenta?
         <router-link
           :to="{ name: 'login' }"
-          class="text-red-700 font-semibold hover:underline"
+          class="text-principal font-semibold hover:underline"
         >
           Inicia sesión
         </router-link>

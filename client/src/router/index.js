@@ -20,7 +20,7 @@ const router = createRouter({
       path: "/",
       name: "dashboard",
       component: () => import("../views/DashboardView.vue"),
-      meta: { requiereAuth: true },
+      meta: { title: "Bienvenido al panel", requiereAuth: true },
     },
     {
       path: "/clientes",

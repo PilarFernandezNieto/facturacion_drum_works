@@ -195,7 +195,7 @@ onMounted(cargarDatos);
           filtroMes = '';
           filtroEstado = '';
         "
-        class="ml-auto text-xs font-bold text-red-500 hover:text-red-700 flex items-center gap-1 transition"
+        class="ml-auto text-xs font-bold text-red-500 hover:text-principal flex items-center gap-1 transition"
       >
         ✕ Limpiar filtros
       </button>
@@ -279,7 +279,7 @@ onMounted(cargarDatos);
                 </a>
                 <button
                   @click="eliminarFactura(factura.id)"
-                  class="text-red-400 hover:text-red-600 text-xs"
+                  class="text-red-400 hover:text-principal text-xs"
                 >
                   Eliminar
                 </button>

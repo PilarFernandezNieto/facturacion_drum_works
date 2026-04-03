@@ -4,6 +4,7 @@ import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import InputError from "@/components/InputError.vue";
 import ApplicationLogo from "@/components/ApplicationLogo.vue";
+import PrimaryButton from "@/components/buttons/PrimaryButton.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -48,7 +49,7 @@ const handleLogin = async () => await authStore.login(processing, errors, form);
             v-model="form.email"
             type="email"
             required
-            class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-700 focus:border-transparent outline-none transition"
+            class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-principal focus:border-transparent outline-none transition"
             placeholder="ejemplo@academia.com"
           />
           <InputError class="mt-2" :message="errors.email?.[0]" />
@@ -62,7 +63,7 @@ const handleLogin = async () => await authStore.login(processing, errors, form);
             v-model="form.password"
             type="password"
             required
-            class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-700 focus:border-transparent outline-none transition"
+            class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-principal focus:border-transparent outline-none transition"
             placeholder="••••••••"
           />
           <InputError class="mt-2" :message="errors.password?.[0]" />
@@ -70,25 +71,21 @@ const handleLogin = async () => await authStore.login(processing, errors, form);
 
         <div
           v-if="errors.message"
-          class="bg-red-50 text-red-700 p-3 rounded-lg text-sm border border-red-200"
+          class="bg-red-50 text-principal p-3 rounded-lg text-sm border border-red-200"
         >
           {{ errors.message }}
         </div>
 
-        <button
-          type="submit"
-          :disabled="processing"
-          class="w-full bg-red-700 hover:bg-red-800 text-white font-semibold py-3 rounded-lg transition shadow-lg shadow-red-200 disabled:opacity-50"
-        >
-          {{ processing ? "Iniciando sesión..." : "Entrar al Panel" }}
-        </button>
+        <PrimaryButton type="submit" :disabled="processing">
+          {{ processing ? "Iniciando sesión..." : "Iniciar Sesión" }}
+        </PrimaryButton>
       </form>
       <!-- 
       <div class="mt-8 text-center text-sm text-slate-600">
         ¿No tienes cuenta?
         <router-link
           :to="{ name: 'registro' }"
-          class="text-red-700 font-semibold hover:underline"
+          class="text-principal font-semibold hover:underline"
         >
           Regístrate aquí
         </router-link>
