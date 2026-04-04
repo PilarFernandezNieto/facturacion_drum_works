@@ -42,13 +42,15 @@ function formatearFecha(fecha) {
     </div>
 
     <!-- Fecha -->
-    <div class="col-span-4 md:col-span-2 text-sm text-slate-500">
+    <div class="col-span-4 md:col-span-1 text-sm text-slate-500">
       {{ formatearFecha(factura.fecha_emision) }}
     </div>
 
     <!-- Monto -->
-    <div class="col-span-4 md:col-span-1 text-center">
-      <div class="font-bold text-slate-900">{{ factura.monto }}€</div>
+    <div class="col-span-4 md:col-span-2">
+      <div class="font-bold text-slate-900 text-center">
+        {{ factura.monto }}€
+      </div>
       <div v-if="factura.iva_monto > 0" class="text-[10px] text-slate-400">
         IVA incl.
       </div>
@@ -71,7 +73,7 @@ function formatearFecha(fecha) {
 
     <!-- Acciones -->
     <div
-      class="col-span-12 md:col-span-2 flex items-center justify-between mt-4 md:mt-0 sm:justify-end gap-3"
+      class="col-span-12 md:col-span-2 flex items-center justify-end mt-4 md:mt-0 gap-3"
     >
       <a
         :href="`${backendUrl}/facturas/${factura.id}/pdf?token=${authStore.token()}`"
