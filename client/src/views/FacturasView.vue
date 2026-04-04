@@ -6,8 +6,9 @@ import { storeToRefs } from "pinia";
 
 import { confirmDialog, notifyError, toast } from "@/utils/swal";
 import ScreenLoader from "@/components/ui/ScreenLoader.vue";
-import FacturaComponent from "@/components/ui/FacturaComponent.vue";
+import FacturaRow from "@/components/ui/FacturaComponent.vue";
 import ModalFacturaBolo from "@/components/ui/ModalFacturaBolo.vue";
+import FacturaComponent from "@/components/ui/FacturaComponent.vue";
 
 const clienteStore = useClienteStore();
 const facturaStore = useFacturaStore();
@@ -94,7 +95,7 @@ onMounted(cargarDatos);
       <div>
         <h2>Control de Facturación</h2>
         <p class="text-sm text-slate-500">
-          Gestiona ingresos y facturas de clases (C) y bolos (B).
+          Gestiona tus ingresos de clases (C) y bolos (B).
         </p>
       </div>
       <div class="flex flex-col gap-3 sm:flex-row">
@@ -136,9 +137,7 @@ onMounted(cargarDatos);
         </select>
       </div>
 
-      <div
-        class="flex items-center gap-3 border-l border-slate-100 pl-0 md:pl-6"
-      >
+      <div class="flex items-center gap-3 border-l border-slate-100 pl-6">
         <label
           class="text-[10px] font-black text-slate-400 uppercase tracking-widest"
         >
@@ -174,6 +173,27 @@ onMounted(cargarDatos);
     <div
       class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
     >
+      <!--
+        Cabecera desktop. Columnas en el mismo orden y tamaño que FacturaRow:
+          col-span-2  Código
+          col-span-4  Cliente / Concepto
+          col-span-2  Fecha
+          col-span-2  Monto
+          col-span-1  Estado
+          col-span-1  Acciones
+      -->
+      <div
+        class="hidden md:grid md:grid-cols-12 md:gap-2 px-4 py-3 bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider"
+      >
+        <div class="col-span-2">Código</div>
+        <div class="col-span-4">Cliente / Concepto</div>
+        <div class="col-span-2">Fecha</div>
+        <div class="col-span-2">Monto</div>
+        <div class="col-span-1">Estado</div>
+        <div class="col-span-1 text-right">Acc.</div>
+      </div>
+
+      <!-- Filas -->
       <FacturaComponent
         v-for="factura in facturasFiltradas"
         :key="factura.id"
@@ -181,6 +201,14 @@ onMounted(cargarDatos);
         @toggle-estado="toggleEstado"
         @eliminar="eliminarFactura"
       />
+
+      <!-- Sin resultados -->
+      <div
+        v-if="!facturasFiltradas.length"
+        class="px-6 py-12 text-center text-slate-400"
+      >
+        No hay facturas que coincidan con los filtros aplicados.
+      </div>
     </div>
 
     <!-- Modal factura bolo -->
