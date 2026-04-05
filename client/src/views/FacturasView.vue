@@ -78,6 +78,10 @@ async function toggleEstado(factura) {
     notifyError("Error", "No se pudo cambiar el estado.");
   }
 }
+const cerrarModal = async () => {
+  mostrarModalBolo.value = false;
+  await facturaStore.cargarFacturas();
+};
 
 onMounted(cargarDatos);
 </script>
@@ -212,9 +216,6 @@ onMounted(cargarDatos);
     </div>
 
     <!-- Modal factura bolo -->
-    <ModalFacturaBolo
-      v-if="mostrarModalBolo"
-      @close="mostrarModalBolo = false"
-    />
+    <ModalFacturaBolo v-if="mostrarModalBolo" @close="cerrarModal" />
   </div>
 </template>

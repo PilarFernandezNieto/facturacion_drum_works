@@ -43,9 +43,9 @@ function limpiarFormulario() {
 async function guardar() {
   try {
     await facturaStore.guardarBolo(formulario);
-    toast("Factura B generada con éxito");
     limpiarFormulario();
     emit("close");
+    toast("Factura B generada con éxito");
   } catch {
     notifyError("Error", "Error al guardar factura de bolo.");
   }

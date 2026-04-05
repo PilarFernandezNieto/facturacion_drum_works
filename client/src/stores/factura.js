@@ -70,7 +70,7 @@ export const useFacturaStore = defineStore("factura", () => {
         ...datos,
         serie: "B",
       });
-      await cargarFacturas();
+      // Ya no recarga aquí
       return respuesta.data;
     } catch (error) {
       console.error("Error al guardar bolo:", error);
