@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Factura;
-use App\Models\Estudiante;
+use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -12,21 +12,21 @@ class FacturaController extends Controller
 {
     public function index()
     {
-        return response()->json(Factura::with('estudiante')->orderBy('fecha_emision', 'desc')->get());
+        return response()->json(Factura::with('cliente')->orderBy('fecha_emision', 'desc')->get());
     }
 
     /**
-     * Generación masiva de la serie C (Clases)
+     * Generación masiva de la serie C (Alumnos/Clases)
      */
     public function generarMasiva(Request $request)
     {
-        $estudiantes = Estudiante::where('tipo', 'clase')->get();
+        $clientes = Cliente::where('tipo', 'alumno')->get();
         $fechaActual = Carbon::now();
         $anio = $fechaActual->year;
         $conteo = 0;
 
-        foreach ($estudiantes as $estudiante) {
-            $existe = Factura::where('estudiante_id', $estudiante->id)
+        foreach ($clientes as $cliente) {
+            $existe = Factura::where('cliente_id', $cliente->id)
                 ->where('serie', 'C')
                 ->whereMonth('fecha_emision', $fechaActual->month)
                 ->whereYear('fecha_emision', $fechaActual->year)
@@ -42,15 +42,15 @@ class FacturaController extends Controller
                 $concepto = "Clases batería " . strtoupper($mesNombre);
 
                 Factura::create([
-                    'estudiante_id' => $estudiante->id,
+                    'cliente_id' => $cliente->id,
                     'serie' => 'C',
                     'numero' => $ultimoNumero + 1,
-                    'subtotal' => $estudiante->cuota_mensual,
+                    'subtotal' => $cliente->cuota_mensual,
                     'iva_porcentaje' => 0,
                     'iva_monto' => 0,
                     'irpf_porcentaje' => 0,
                     'irpf_monto' => 0,
-                    'monto' => $estudiante->cuota_mensual,
+                    'monto' => $cliente->cuota_mensual,
                     'concepto' => $concepto,
                     'estado' => 'pendiente',
                     'fecha_emision' => $fechaActual->toDateString(),
@@ -71,7 +71,7 @@ class FacturaController extends Controller
     public function store(Request $request)
     {
         $datos = $request->validate([
-            'estudiante_id' => 'required|exists:estudiantes,id',
+            'cliente_id' => 'required|exists:clientes,id',
             'serie' => 'required|in:C,B',
             'subtotal' => 'required|numeric',
             'iva_porcentaje' => 'required|numeric',
@@ -93,7 +93,7 @@ class FacturaController extends Controller
         $total = $datos['subtotal'] + $ivaMonto - $irpfMonto;
 
         $factura = Factura::create([
-            'estudiante_id' => $datos['estudiante_id'],
+            'cliente_id' => $datos['cliente_id'],
             'serie' => $datos['serie'],
             'numero' => $ultimoNumero + 1,
             'subtotal' => $datos['subtotal'],
@@ -129,12 +129,12 @@ class FacturaController extends Controller
 
     public function exportarPdf(Factura $factura)
     {
-        $factura->load('estudiante');
+        $factura->load('cliente');
         
         $datos = [
             'fecha' => Carbon::parse($factura->fecha_emision)->format('d/m/Y'),
             'factura' => $factura,
-            'estudiante' => $factura->estudiante,
+            'cliente' => $factura->cliente,
             // Agregamos el código formateado para la vista
             'codigo_factura' => $factura->codigo
         ];

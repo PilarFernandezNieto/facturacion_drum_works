@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\EstudianteController;
+use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\FacturaController;
 
 // Autenticación pública
@@ -17,8 +17,8 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    // CRUD Estudiantes
-    Route::apiResource('estudiantes', EstudianteController::class);
+    // CRUD Clientes
+    Route::apiResource('clientes', ClienteController::class);
 
     // Gestión de Facturas
     Route::get('facturas', [FacturaController::class, 'index']);

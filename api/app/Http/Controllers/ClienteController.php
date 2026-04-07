@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Estudiante;
+use App\Models\Cliente;
 use Illuminate\Http\Request;
 
-class EstudianteController extends Controller
+class ClienteController extends Controller
 {
     /**
-     * Listar todos los estudiantes.
+     * Listar todos los clientes.
      */
     public function index()
     {
-        return response()->json(Estudiante::all());
+        return response()->json(Cliente::all());
     }
 
     /**
-     * Almacenar un nuevo estudiante.
+     * Almacenar un nuevo cliente.
      */
     public function store(Request $request)
     {
@@ -26,33 +26,36 @@ class EstudianteController extends Controller
             'email' => 'nullable|email|max:255',
             'telefono' => 'nullable|string|max:20',
             'direccion' => 'nullable|string|max:255',
+            'codigo_postal' => 'nullable|string|max:10',
+            'localidad' => 'nullable|string|max:255',
+            'provincia' => 'nullable|string|max:255',
             'curso' => 'nullable|string|max:100',
             'cuota_mensual' => 'required|numeric|min:0',
-            'tipo' => 'required|in:clase,bolo',
+            'tipo' => 'required|in:alumno,bolo',
         ];
 
         $datosValidados = $request->validate($reglas);
 
-        $estudiante = Estudiante::create($datosValidados);
+        $cliente = Cliente::create($datosValidados);
 
         return response()->json([
             'mensaje' => 'Registro guardado correctamente.',
-            'estudiante' => $estudiante
+            'cliente' => $cliente
         ], 201);
     }
 
     /**
-     * Mostrar un estudiante específico.
+     * Mostrar un cliente específico.
      */
-    public function show(Estudiante $estudiante)
+    public function show(Cliente $cliente)
     {
-        return response()->json($estudiante);
+        return response()->json($cliente);
     }
 
     /**
-     * Actualizar los datos de un estudiante.
+     * Actualizar los datos de un cliente.
      */
-    public function update(Request $request, Estudiante $estudiante)
+    public function update(Request $request, Cliente $cliente)
     {
         $reglas = [
             'nombre' => 'sometimes|required|string|max:255',
@@ -62,28 +65,28 @@ class EstudianteController extends Controller
             'direccion' => 'nullable|string|max:255',
             'curso' => 'nullable|string|max:100',
             'cuota_mensual' => 'sometimes|required|numeric|min:0',
-            'tipo' => 'sometimes|required|in:clase,bolo',
+            'tipo' => 'sometimes|required|in:alumno,bolo',
         ];
 
         $datosValidados = $request->validate($reglas);
 
-        $estudiante->update($datosValidados);
+        $cliente->update($datosValidados);
 
         return response()->json([
             'mensaje' => 'Datos actualizados correctamente.',
-            'estudiante' => $estudiante
+            'cliente' => $cliente
         ]);
     }
 
     /**
-     * Eliminar un estudiante.
+     * Eliminar un cliente.
      */
-    public function destroy(Estudiante $estudiante)
+    public function destroy(Cliente $cliente)
     {
-        $estudiante->delete();
+        $cliente->delete();
 
         return response()->json([
-            'mensaje' => 'Estudiante eliminado correctamente.'
+            'mensaje' => 'Cliente eliminado correctamente.'
         ]);
     }
 }

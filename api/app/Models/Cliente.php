@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Estudiante extends Model
+class Cliente extends Model
 {
     use HasFactory;
 
@@ -15,9 +15,12 @@ class Estudiante extends Model
         'email',
         'telefono',
         'direccion',
+        'codigo_postal',
+        'localidad',
+        'provincia',
         'curso',
         'cuota_mensual',
-        'tipo' // clase o bolo
+        'tipo' // alumno o bolo
     ];
 
     public function facturas()

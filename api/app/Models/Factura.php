@@ -10,7 +10,7 @@ class Factura extends Model
     use HasFactory;
 
     protected $fillable = [
-        'estudiante_id',
+        'cliente_id',
         'serie',
         'numero',
         'subtotal',
@@ -27,9 +27,9 @@ class Factura extends Model
 
     protected $appends = ['codigo'];
 
-    public function estudiante()
+    public function cliente()
     {
-        return $this->belongsTo(Estudiante::class);
+        return $this->belongsTo(Cliente::class);
     }
 
     /**

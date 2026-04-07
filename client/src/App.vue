@@ -1,10 +1,13 @@
 <script setup>
+import { ref } from "vue";
 import { RouterView, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
-import ApplicationLogo from "@/components/ApplicationLogo.vue";
+import AppSidebar from "./components/ui/AppSidebar.vue";
+import AppHeader from "./components/ui/AppHeader.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();
+const sidebarOpen = ref(false);
 
 const handleLogout = () => {
   authStore.logout();
@@ -19,75 +22,18 @@ const handleLogout = () => {
     </Suspense>
   </div>
 
-  <div v-else class="flex min-h-screen bg-slate-50">
-    <aside
-      class="w-64 bg-white border-r border-slate-200 flex flex-col fixed inset-y-0 left-0 shadow-sm z-10"
-    >
-      <div
-        class="p-6 border-b border-slate-100 flex items-center justify-center"
-      >
-        <ApplicationLogo class="w-20 h-20 fill-current text-gray-500" />
-      </div>
+  <div v-else class="flex min-h-screen bg-slate-50 overflow-x-hidden">
+    <AppSidebar
+      :open="sidebarOpen"
+      @logout="handleLogout"
+      @close="sidebarOpen = false"
+    />
 
-      <nav class="flex-1 p-4 space-y-2">
-        <router-link
-          :to="{ name: 'dashboard' }"
-          class="flex items-center px-4 py-3 rounded-lg text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition group"
-          active-class="bg-blue-600 !text-white shadow-md shadow-blue-200"
-        >
-          <span class="font-medium">Inicio</span>
-        </router-link>
-
-        <router-link
-          :to="{ name: 'estudiantes' }"
-          class="flex items-center px-4 py-3 rounded-lg text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition"
-          active-class="bg-blue-600 !text-white shadow-md shadow-blue-200"
-        >
-          <span class="font-medium">Estudiantes</span>
-        </router-link>
-
-        <router-link
-          :to="{ name: 'facturas' }"
-          class="flex items-center px-4 py-3 rounded-lg text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition"
-          active-class="bg-blue-600 !text-white shadow-md shadow-blue-200"
-        >
-          <span class="font-medium">Facturas</span>
-        </router-link>
-      </nav>
-
-      <div class="p-4 border-t border-slate-100">
-        <button
-          @click="handleLogout"
-          class="w-full flex items-center px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 transition"
-        >
-          <span class="font-medium">Cerrar Sesión</span>
-        </button>
-      </div>
-    </aside>
-
-    <!-- Contenido Principal -->
-    <main class="ml-64 flex-1 p-8">
-      <header class="mb-8 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-slate-800">
-          {{
-            $route.name === "dashboard"
-              ? "Bienvenido al Panel"
-              : $route.name
-                ? $route.name.charAt(0).toUpperCase() + $route.name.slice(1)
-                : ""
-          }}
-        </h1>
-        <div class="flex items-center gap-3">
-          <span class="text-sm font-medium text-slate-500 italic">{{
-            authStore.user?.name
-          }}</span>
-          <div
-            class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold uppercase border-2 border-white shadow-sm"
-          >
-            {{ authStore.user?.name?.charAt(0) }}
-          </div>
-        </div>
-      </header>
+    <main class="flex-1 min-w-0 p-4 sm:p-8 lg:ml-64">
+      <AppHeader
+        :user="authStore.user"
+        @toggle-sidebar="sidebarOpen = !sidebarOpen"
+      />
       <Suspense>
         <RouterView />
       </Suspense>
@@ -96,7 +42,6 @@ const handleLogout = () => {
 </template>
 
 <style>
-/* Estilos globales rápidos */
 .v-enter-active,
 .v-leave-active {
   transition: opacity 0.3s ease;
