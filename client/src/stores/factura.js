@@ -105,6 +105,22 @@ export const useFacturaStore = defineStore("factura", () => {
       throw error;
     }
   };
+  const descargarPDF = async (id, codigo) => {
+    try {
+      const respuesta = await api.get(`/facturas/${id}/pdf`, {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(respuesta.data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `factura-${codigo}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error al descargar el PDF:", error);
+      throw error;
+    }
+  };
 
   function nombreMes(mesAnio) {
     if (!mesAnio) return "";
@@ -128,6 +144,7 @@ export const useFacturaStore = defineStore("factura", () => {
     guardarBolo,
     cambiarEstado,
     eliminarFactura,
+    descargarPDF,
     nombreMes,
   };
 });

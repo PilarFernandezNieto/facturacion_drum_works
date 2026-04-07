@@ -1,7 +1,9 @@
 <script setup>
 import { useAuthStore } from "@/stores/auth";
+import { useFacturaStore } from "@/stores/factura";
 
 const authStore = useAuthStore();
+const facturaStore = useFacturaStore();
 const backendUrl = import.meta.env.VITE_APP_BACKEND_URL;
 
 defineProps({
@@ -75,13 +77,18 @@ function formatearFecha(fecha) {
 
     <!-- Acciones · col-span-1 -->
     <div class="md:col-span-1 flex items-center justify-end gap-1">
-      <a
-        :href="`${backendUrl}/facturas/${factura.id}/pdf?token=${authStore.token()}`"
+      <!-- <a
         target="_blank"
         class="text-purple-600 hover:bg-purple-100 px-2 py-1 rounded border border-principal/20 text-xs font-bold transition"
       >
         PDF
-      </a>
+      </a> -->
+      <button
+        @click="facturaStore.descargarPDF(factura.id, factura.codigo)"
+        class="text-purple-600 hover:bg-purple-100 px-2 py-1 rounded border border-purple-600/20 text-xs font-bold transition"
+      >
+        PDF
+      </button>
       <button
         @click="emit('eliminar', factura.id)"
         class="text-red-400 hover:text-red-600 transition p-1 rounded hover:bg-red-50"

@@ -1,58 +1,197 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Drum Works — API (Laravel 13)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Backend REST de la aplicación de gestión de facturación para la academia **Drum Works**. Desarrollado con Laravel 13 y autenticación mediante Laravel Sanctum.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tecnologías
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [Laravel 13](https://laravel.com/) — Framework PHP
+- [Laravel Sanctum](https://laravel.com/docs/sanctum) — Autenticación por token
+- [Laravel DomPDF](https://github.com/barryvdh/laravel-dompdf) — Generación de PDFs
+- MySQL 8.0
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+**Requisito:** PHP 8.4
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Estructura del proyecto
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+api/
+├── app/
+│   ├── Http/
+│   │   └── Controllers/
+│   │       ├── AuthController.php
+│   │       ├── ClienteController.php
+│   │       └── FacturaController.php
+│   └── Models/
+│       ├── User.php
+│       ├── Cliente.php
+│       └── Factura.php
+├── database/
+│   └── migrations/
+├── resources/
+│   └── views/
+│       └── pdf/
+│           └── factura.blade.php   # Plantilla PDF de factura
+├── routes/
+│   ├── api.php                     # Rutas de la API
+│   └── web.php
+├── storage/
+├── .env.example
+└── composer.json
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## Variables de entorno
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Copia `.env.example` a `.env` y configura:
 
-## Code of Conduct
+```env
+APP_NAME="Drum Works"
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost:8000
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=drum_works
+DB_USERNAME=root
+DB_PASSWORD=
 
-## Security Vulnerabilities
+SESSION_DRIVER=file
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## Instalación y desarrollo
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+# Instalar dependencias
+composer install
+
+# Generar clave de la aplicación
+php artisan key:generate
+
+# Ejecutar migraciones
+php artisan migrate
+
+# Servidor de desarrollo
+php artisan serve
+```
+
+La API estará disponible en `http://localhost:8000/api`.
+
+---
+
+## Despliegue en producción
+
+```bash
+# Instalar dependencias sin paquetes de desarrollo
+php8.4-cli /ruta/a/composer.phar install --no-dev --optimize-autoloader
+
+# Configurar .env de producción y generar clave
+php8.4-cli artisan key:generate
+
+# Ejecutar migraciones
+php8.4-cli artisan migrate --force
+
+# Cachear configuración, rutas y vistas
+php8.4-cli artisan config:cache
+php8.4-cli artisan route:cache
+php8.4-cli artisan view:cache
+
+# Permisos de carpetas
+chmod -R 775 storage bootstrap/cache
+```
+
+El Document Root del servidor web debe apuntar a la carpeta `public/`.
+
+---
+
+## Endpoints de la API
+
+Todas las rutas protegidas requieren el header:
+```
+Authorization: Bearer {token}
+```
+
+### Autenticación
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/api/registro` | Registrar usuario |
+| POST | `/api/login` | Iniciar sesión |
+| POST | `/api/logout` | Cerrar sesión |
+| GET | `/api/usuario` | Datos del usuario autenticado |
+
+### Clientes
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/clientes` | Listar todos los clientes |
+| POST | `/api/clientes` | Crear cliente |
+| GET | `/api/clientes/{id}` | Ver cliente |
+| PUT | `/api/clientes/{id}` | Actualizar cliente |
+| DELETE | `/api/clientes/{id}` | Eliminar cliente |
+
+Los clientes tienen dos tipos:
+- `alumno` — Alumnos de clases, con cuota mensual y curso/grupo
+- `bolo` — Clientes para conciertos, con precio base
+
+### Facturas
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/facturas` | Listar todas las facturas |
+| POST | `/api/facturas` | Crear factura |
+| POST | `/api/facturas/generar-masiva` | Generar facturas mensuales para todos los alumnos |
+| PUT | `/api/facturas/{id}/estado` | Cambiar estado (pendiente/pagada) |
+| DELETE | `/api/facturas/{id}` | Eliminar factura |
+| GET | `/api/facturas/{id}/pdf` | Descargar factura en PDF |
+
+Las facturas tienen dos series:
+- **Serie C** — Clases mensuales, generadas de forma masiva
+- **Serie B** — Bolos (conciertos), creadas manualmente con IVA 10% e IRPF 15%
+
+---
+
+## Modelo de datos
+
+### Cliente
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| nombre | string | Nombre completo o razón social |
+| nif_cif | string | Identificación fiscal |
+| email | string | |
+| telefono | string | |
+| direccion | string | Dirección fiscal |
+| codigo_postal | string | |
+| localidad | string | |
+| provincia | string | |
+| tipo | enum | `alumno` o `bolo` |
+| curso | string | Solo para alumnos |
+| cuota_mensual | decimal | Cuota mensual o precio base bolo |
+
+### Factura
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| codigo | string | Código único (ej: `001C/2025`) |
+| serie | enum | `C` (clases) o `B` (bolos) |
+| cliente_id | foreign key | |
+| concepto | string | Descripción del servicio |
+| fecha_emision | date | |
+| fecha_evento | date | Solo para bolos |
+| subtotal | decimal | Base imponible |
+| iva_porcentaje | decimal | |
+| iva_monto | decimal | |
+| irpf_porcentaje | decimal | |
+| irpf_monto | decimal | |
+| monto | decimal | Total a percibir |
+| estado | enum | `pendiente` o `pagada` |

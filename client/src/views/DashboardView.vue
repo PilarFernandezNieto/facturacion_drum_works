@@ -15,6 +15,13 @@ const isLoading = ref(true);
 // Stats derivadas
 const totalClientes = computed(() => clientes.value.length);
 
+const alumnos = computed(
+  () => clientes.value.filter((cliente) => cliente.tipo === "alumno").length,
+);
+const bolos = computed(
+  () => clientes.value.filter((cliente) => cliente.tipo === "bolo").length,
+);
+
 const ahora = new Date();
 const mesActual = ahora.getMonth();
 const anioActual = ahora.getFullYear();
@@ -59,7 +66,7 @@ onMounted(cargarStats);
   <div>
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
       <!-- Tarjeta Clientes -->
-      <TarjetaDashboard label="Alumnos" :value="totalClientes">
+      <TarjetaDashboard label="Alumnos" :value="alumnos">
         <template #icon>
           <svg
             width="30px"
