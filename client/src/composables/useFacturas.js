@@ -1,3 +1,4 @@
+import { ref } from "vue";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import api from "@/api/axios";
 
@@ -59,6 +60,63 @@ export function useEliminarFactura() {
     mutationFn: (id) => api.delete(`facturas/${id}`).then((r) => r.data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
   });
+}
+
+export function useDescargarPDF() {
+  const descargando = ref(false);
+
+  async function descargarPDF(id, codigo) {
+    descargando.value = true;
+    try {
+      const respuesta = await api.get(`facturas/${id}/pdf`, {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(respuesta.data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `FRA ${codigo.replace("/", "-")}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } finally {
+      descargando.value = false;
+    }
+  }
+
+  return { descargarPDF, descargando };
+}
+
+export function useDescargarPDFMasivo() {
+  const descargando = ref(false);
+
+  async function descargarMasivo(facturas, nombreZip = "facturas.zip") {
+    if (!facturas.length) return;
+    descargando.value = true;
+    try {
+      const { default: JSZip } = await import("jszip");
+      const zip = new JSZip();
+
+      await Promise.all(
+        facturas.map(async (f) => {
+          const resp = await api.get(`facturas/${f.id}/pdf`, {
+            responseType: "blob",
+          });
+          zip.file(`FRA ${f.codigo.replace("/", "-")}.pdf`, resp.data);
+        }),
+      );
+
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = nombreZip;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } finally {
+      descargando.value = false;
+    }
+  }
+
+  return { descargarMasivo, descargando };
 }
 
 export function nombreMes(mesAnio) {

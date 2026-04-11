@@ -2,15 +2,15 @@
 import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
 
-import {
-  useClientes,
-  useEliminarCliente,
-} from "@/composables/useClientes";
+import { useClientes, useEliminarCliente } from "@/composables/useClientes";
+import { usePaginacion } from "@/composables/usePaginacion";
 
 import { confirmDialog, notifyError, toast } from "@/utils/swal";
 import PrimaryButton from "@/components/buttons/PrimaryButton.vue";
 import ModalCliente from "@/components/ui/ModalCliente.vue";
+import ModalHistorialCliente from "@/components/ui/ModalHistorialCliente.vue";
 import ClienteComponent from "@/components/ui/ClienteComponent.vue";
+import PaginacionComponent from "@/components/ui/PaginacionComponent.vue";
 import ScreenLoader from "@/components/ui/ScreenLoader.vue";
 
 const route = useRoute();
@@ -30,8 +30,12 @@ const subtitulo = computed(() =>
     : "Administra tus clientes de conciertos y bolos.",
 );
 
+const { paginado, pagina, totalPaginas, paginas, desde, hasta, total, irA } =
+  usePaginacion(clientesFiltrados, 10);
+
 const mostrarModal = ref(false);
 const clienteSeleccionado = ref(null);
+const clienteHistorial = ref(null);
 
 function abrirCrear() {
   clienteSeleccionado.value = null;
@@ -97,20 +101,27 @@ async function eliminarCliente(id) {
         <div class="col-span-2 text-right">Acciones</div>
       </div>
       <ClienteComponent
-        v-for="cliente in clientesFiltrados"
+        v-for="cliente in paginado"
         :key="cliente.id"
         :cliente="cliente"
         @eliminar="eliminarCliente"
         @editar="abrirEditar"
+        @ver-historial="clienteHistorial = $event"
       />
-      <div
-        v-if="!clientesFiltrados.length"
-        class="px-6 py-12 text-center text-slate-400"
-      >
+      <div v-if="!total" class="px-6 py-12 text-center text-slate-400">
         No hay
         {{ tipo === "alumno" ? "alumnos" : "clientes de bolos" }} registrados
         todavía.
       </div>
+      <PaginacionComponent
+        :pagina="pagina"
+        :total-paginas="totalPaginas"
+        :paginas="paginas"
+        :desde="desde"
+        :hasta="hasta"
+        :total="total"
+        @ir="irA"
+      />
     </div>
   </div>
 
@@ -120,5 +131,12 @@ async function eliminarCliente(id) {
     :cliente="clienteSeleccionado"
     :tipo-default="tipo"
     @close="cerrarModal"
+  />
+
+  <!-- Modal historial de facturas -->
+  <ModalHistorialCliente
+    v-if="clienteHistorial"
+    :cliente="clienteHistorial"
+    @close="clienteHistorial = null"
   />
 </template>

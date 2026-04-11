@@ -1,10 +1,5 @@
 <script setup>
-import { useAuthStore } from "@/stores/auth";
-import { useFacturaStore } from "@/stores/factura";
-
-const authStore = useAuthStore();
-const facturaStore = useFacturaStore();
-const backendUrl = import.meta.env.VITE_APP_BACKEND_URL;
+import { useDescargarPDF } from "@/composables/useFacturas";
 
 defineProps({
   factura: {
@@ -14,6 +9,8 @@ defineProps({
 });
 
 const emit = defineEmits(["toggle-estado", "eliminar"]);
+
+const { descargarPDF, descargando } = useDescargarPDF();
 
 function formatearFecha(fecha) {
   return new Date(fecha).toLocaleDateString("es-ES", {
@@ -84,10 +81,11 @@ function formatearFecha(fecha) {
         PDF
       </a> -->
       <button
-        @click="facturaStore.descargarPDF(factura.id, factura.codigo)"
-        class="text-purple-600 hover:bg-purple-100 px-2 py-1 rounded border border-purple-600/20 text-xs font-bold transition"
+        @click="descargarPDF(factura.id, factura.codigo)"
+        :disabled="descargando"
+        class="text-purple-600 hover:bg-purple-100 px-2 py-1 rounded border border-purple-600/20 text-xs font-bold transition disabled:opacity-50"
       >
-        PDF
+        {{ descargando ? "..." : "PDF" }}
       </button>
       <button
         @click="emit('eliminar', factura.id)"
