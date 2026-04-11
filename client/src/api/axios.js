@@ -1,6 +1,5 @@
 import Axios from "axios";
-import { useRouter } from "vue-router";
-const router = useRouter();
+import router from "@/router";
 
 // Helpers para gestionar el token
 export const getToken = () => localStorage.getItem("access_token");

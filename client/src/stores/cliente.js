@@ -1,10 +1,13 @@
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { defineStore } from "pinia";
 import api from "@/api/axios";
 
 export const useClienteStore = defineStore("cliente", () => {
   const clientes = ref([]);
   const isLoading = ref(false);
+
+  const alumnos = computed(() => clientes.value.filter((c) => c.tipo === "alumno"));
+  const bolos = computed(() => clientes.value.filter((c) => c.tipo === "bolo"));
 
   const cargarClientes = async () => {
     isLoading.value = true;
@@ -53,6 +56,8 @@ export const useClienteStore = defineStore("cliente", () => {
 
   return {
     clientes,
+    alumnos,
+    bolos,
     isLoading,
     cargarClientes,
     agregarCliente,

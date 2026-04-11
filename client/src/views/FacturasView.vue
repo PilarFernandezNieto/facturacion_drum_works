@@ -6,7 +6,6 @@ import { storeToRefs } from "pinia";
 
 import { confirmDialog, notifyError, toast } from "@/utils/swal";
 import ScreenLoader from "@/components/ui/ScreenLoader.vue";
-import FacturaRow from "@/components/ui/FacturaComponent.vue";
 import ModalFacturaBolo from "@/components/ui/ModalFacturaBolo.vue";
 import FacturaComponent from "@/components/ui/FacturaComponent.vue";
 

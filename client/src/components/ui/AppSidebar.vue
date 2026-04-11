@@ -1,4 +1,6 @@
 <script setup>
+import { ref } from "vue";
+import { useRoute } from "vue-router";
 import ApplicationLogo from "@/components/ApplicationLogo.vue";
 import AppNavLink from "../links/AppNavLink.vue";
 
@@ -7,6 +9,11 @@ defineProps({
 });
 
 defineEmits(["logout", "close"]);
+
+const route = useRoute();
+const clientesAbierto = ref(
+  route.name === "alumnos" || route.name === "bolos",
+);
 </script>
 
 <template>
@@ -35,9 +42,35 @@ defineEmits(["logout", "close"]);
       >
         Inicio
       </AppNavLink>
-      <AppNavLink :to="{ name: 'clientes' }" @click="$emit('close')"
-        >Clientes</AppNavLink
-      >
+
+      <!-- Dropdown Clientes -->
+      <div>
+        <button
+          @click="clientesAbierto = !clientesAbierto"
+          :class="[
+            'w-full flex items-center justify-between px-4 py-3 rounded-lg text-slate-600 hover:bg-principal-100 hover:text-white transition',
+            (route.name === 'alumnos' || route.name === 'bolos') && 'bg-principal-100 text-slate-800 font-semibold',
+          ]"
+        >
+          <span class="font-medium">Clientes</span>
+          <svg
+            :class="['w-4 h-4 transition-transform duration-200', clientesAbierto ? 'rotate-180' : '']"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <div v-show="clientesAbierto" class="mt-1 space-y-1 pl-3">
+          <AppNavLink :to="{ name: 'alumnos' }" @click="$emit('close')">
+            Alumnos
+          </AppNavLink>
+          <AppNavLink :to="{ name: 'bolos' }" @click="$emit('close')">
+            Bolos
+          </AppNavLink>
+        </div>
+      </div>
+
       <AppNavLink :to="{ name: 'facturas' }" @click="$emit('close')"
         >Facturas</AppNavLink
       >

@@ -6,21 +6,14 @@ import { useClienteStore } from "@/stores/cliente";
 import TarjetaDashboard from "@/components/ui/TarjetaDashboard.vue";
 
 const clienteStore = useClienteStore();
-const { clientes } = storeToRefs(clienteStore);
+const { alumnos } = storeToRefs(clienteStore);
 
 // Estado
 const todasFacturas = ref([]);
 const isLoading = ref(true);
 
 // Stats derivadas
-const totalClientes = computed(() => clientes.value.length);
-
-const alumnos = computed(
-  () => clientes.value.filter((cliente) => cliente.tipo === "alumno").length,
-);
-const bolos = computed(
-  () => clientes.value.filter((cliente) => cliente.tipo === "bolo").length,
-);
+const totalAlumnos = computed(() => alumnos.value.length);
 
 const ahora = new Date();
 const mesActual = ahora.getMonth();
@@ -66,7 +59,7 @@ onMounted(cargarStats);
   <div>
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
       <!-- Tarjeta Clientes -->
-      <TarjetaDashboard label="Alumnos" :value="alumnos">
+      <TarjetaDashboard label="Alumnos" :value="totalAlumnos">
         <template #icon>
           <svg
             width="30px"
@@ -180,9 +173,14 @@ onMounted(cargarStats);
         </p>
         <div class="flex flex-col lg:flex-row gap-3">
           <router-link
-            :to="{ name: 'clientes' }"
+            :to="{ name: 'alumnos' }"
             class="bg-white text-principal text-center px-6 py-2 rounded-xl font-bold hover:bg-blue-50 transition"
-            >Gestionar Clientes</router-link
+            >Alumnos</router-link
+          >
+          <router-link
+            :to="{ name: 'bolos' }"
+            class="bg-white text-principal text-center px-6 py-2 rounded-xl font-bold hover:bg-blue-50 transition"
+            >Bolos</router-link
           >
           <router-link
             :to="{ name: 'facturas' }"

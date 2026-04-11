@@ -24,9 +24,19 @@ const router = createRouter({
     },
     {
       path: "/clientes",
-      name: "clientes",
+      redirect: { name: "alumnos" },
+    },
+    {
+      path: "/clientes/alumnos",
+      name: "alumnos",
       component: () => import("../views/ClientesView.vue"),
-      meta: { requiereAuth: true },
+      meta: { requiereAuth: true, tipo: "alumno" },
+    },
+    {
+      path: "/clientes/bolos",
+      name: "bolos",
+      component: () => import("../views/ClientesView.vue"),
+      meta: { requiereAuth: true, tipo: "bolo" },
     },
     {
       path: "/facturas",

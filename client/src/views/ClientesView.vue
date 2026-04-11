@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useClienteStore } from "@/stores/cliente";
 
@@ -9,17 +10,26 @@ import ModalCliente from "@/components/ui/ModalCliente.vue";
 import ClienteComponent from "@/components/ui/ClienteComponent.vue";
 import ScreenLoader from "@/components/ui/ScreenLoader.vue";
 
+const route = useRoute();
 const clienteStore = useClienteStore();
-const { clientes, isLoading } = storeToRefs(clienteStore);
+const { alumnos, bolos, isLoading } = storeToRefs(clienteStore);
+
+const tipo = computed(() => route.meta.tipo);
+const clientesFiltrados = computed(() =>
+  tipo.value === "alumno" ? alumnos.value : bolos.value,
+);
+
+const titulo = computed(() =>
+  tipo.value === "alumno" ? "Alumnos de Clases" : "Clientes de Bolos",
+);
+const subtitulo = computed(() =>
+  tipo.value === "alumno"
+    ? "Administra tus alumnos y sus cuotas mensuales."
+    : "Administra tus clientes de conciertos y bolos.",
+);
 
 const mostrarModal = ref(false);
-const clienteSeleccionado = ref(null); // null = crear, objeto = editar
-const filtroTipo = ref("todos"); // 'todos' | 'alumno' | 'bolo'
-
-const clientesFiltrados = computed(() => {
-  if (filtroTipo.value === "todos") return clientes.value;
-  return clientes.value.filter((c) => c.tipo === filtroTipo.value);
-});
+const clienteSeleccionado = ref(null);
 
 function abrirCrear() {
   clienteSeleccionado.value = null;
@@ -53,7 +63,7 @@ async function eliminarCliente(id) {
 }
 
 onMounted(() => {
-  if (clientes.value.length === 0) {
+  if (clienteStore.clientes.length === 0) {
     clienteStore.cargarClientes();
   }
 });
@@ -69,60 +79,18 @@ onMounted(() => {
       class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
     >
       <div>
-        <h2>Gestión de Clientes</h2>
-        <p class="text-slate-500">
-          Administra tus alumnos de clases y tus clientes de bolos.
-        </p>
+        <h2>{{ titulo }}</h2>
+        <p class="text-slate-500">{{ subtitulo }}</p>
       </div>
       <PrimaryButton @click="abrirCrear" class="w-full md:w-auto">
-        <span class="text-xl">+</span> Nuevo Cliente
+        <span class="text-xl">+</span> Nuevo
       </PrimaryButton>
-    </div>
-
-    <!-- Filtros tipo -->
-    <div
-      class="flex bg-white p-1 rounded-xl shadow-sm border border-slate-200 w-full md:w-fit justify-between"
-    >
-      <button
-        @click="filtroTipo = 'todos'"
-        :class="
-          filtroTipo === 'todos'
-            ? 'bg-slate-100 text-slate-900 shadow-sm'
-            : 'text-slate-500 hover:text-slate-700'
-        "
-        class="px-4 py-2 rounded-lg text-sm font-bold transition"
-      >
-        Todos
-      </button>
-      <button
-        @click="filtroTipo = 'alumno'"
-        :class="
-          filtroTipo === 'alumno'
-            ? 'bg-principal-50 text-principal shadow-sm'
-            : 'text-slate-500 hover:text-slate-700'
-        "
-        class="px-4 py-2 rounded-lg text-sm font-bold transition"
-      >
-        Clases
-      </button>
-      <button
-        @click="filtroTipo = 'bolo'"
-        :class="
-          filtroTipo === 'bolo'
-            ? 'bg-purple-100 text-purple-700 shadow-sm'
-            : 'text-slate-500 hover:text-slate-700'
-        "
-        class="px-4 py-2 rounded-lg text-sm font-bold transition"
-      >
-        Bolos
-      </button>
     </div>
 
     <!-- Lista de clientes -->
     <div
       class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
     >
-      <!-- Cabecera visible solo en desktop -->
       <div
         class="hidden md:grid md:grid-cols-12 md:gap-2 px-4 py-3 bg-slate-50 border-b border-slate-100 text-sm font-semibold text-slate-700"
       >
@@ -139,12 +107,20 @@ onMounted(() => {
         @eliminar="eliminarCliente"
         @editar="abrirEditar"
       />
+      <div
+        v-if="!clientesFiltrados.length"
+        class="px-6 py-12 text-center text-slate-400"
+      >
+        No hay {{ tipo === "alumno" ? "alumnos" : "clientes de bolos" }} registrados todavía.
+      </div>
     </div>
   </div>
+
   <!-- Modal crear / editar -->
   <ModalCliente
     v-if="mostrarModal"
     :cliente="clienteSeleccionado"
+    :tipo-default="tipo"
     @close="cerrarModal"
   />
 </template>

@@ -10,9 +10,16 @@ class ClienteController extends Controller
     /**
      * Listar todos los clientes.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Cliente::all());
+        $query = Cliente::query();
+
+        if ($request->filled('tipo')) {
+            $request->validate(['tipo' => 'in:alumno,bolo']);
+            $query->where('tipo', $request->tipo);
+        }
+
+        return response()->json($query->get());
     }
 
     /**
@@ -63,6 +70,9 @@ class ClienteController extends Controller
             'email' => 'nullable|email|max:255',
             'telefono' => 'nullable|string|max:20',
             'direccion' => 'nullable|string|max:255',
+            'codigo_postal' => 'nullable|string|max:10',
+            'localidad' => 'nullable|string|max:255',
+            'provincia' => 'nullable|string|max:255',
             'curso' => 'nullable|string|max:100',
             'cuota_mensual' => 'sometimes|required|numeric|min:0',
             'tipo' => 'sometimes|required|in:alumno,bolo',

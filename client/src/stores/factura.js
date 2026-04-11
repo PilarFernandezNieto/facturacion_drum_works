@@ -32,7 +32,6 @@ export const useFacturaStore = defineStore("factura", () => {
         "0",
       )}`;
       const matchMes = !filtroMes.value || mesAnio === filtroMes.value;
-      console.log(matchMes);
       return matchEstado && matchMes;
     });
   });

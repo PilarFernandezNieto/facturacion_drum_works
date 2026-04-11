@@ -31,7 +31,6 @@ export const useAuthStore = defineStore("auth", () => {
 
     try {
       const response = await axios.post("login", data);
-      console.log(response);
 
       // Guardar token
       setToken(response.data.access_token);
@@ -41,7 +40,7 @@ export const useAuthStore = defineStore("auth", () => {
 
       router.push({ name: "dashboard" });
     } catch (error) {
-      if (error.response.status === 422) {
+      if (error.response?.status === 422) {
         errors.value = error.response.data.errors;
       }
     } finally {
@@ -64,7 +63,7 @@ export const useAuthStore = defineStore("auth", () => {
 
       router.push({ name: "dashboard" });
     } catch (error) {
-      if (error.response.status === 422) {
+      if (error.response?.status === 422) {
         errors.value = error.response.data.errors;
       }
     } finally {

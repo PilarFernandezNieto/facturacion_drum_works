@@ -9,6 +9,10 @@ const props = defineProps({
     type: Object,
     default: null, // null = modo creación, objeto = modo edición
   },
+  tipoDefault: {
+    type: String,
+    default: "alumno", // pre-rellena el tipo según la sección desde la que se abre
+  },
 });
 
 const emit = defineEmits(["close"]);
@@ -57,7 +61,7 @@ function resetFormulario() {
   formulario.provincia = "";
   formulario.curso = "";
   formulario.cuota_mensual = 0;
-  formulario.tipo = "alumno";
+  formulario.tipo = props.tipoDefault;
 }
 
 async function guardar() {
