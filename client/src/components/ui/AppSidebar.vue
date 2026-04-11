@@ -11,9 +11,7 @@ defineProps({
 defineEmits(["logout", "close"]);
 
 const route = useRoute();
-const clientesAbierto = ref(
-  route.name === "alumnos" || route.name === "bolos",
-);
+const clientesAbierto = ref(route.name === "alumnos" || route.name === "bolos");
 const facturasAbierto = ref(
   route.name === "facturas-clases" || route.name === "facturas-bolos",
 );
@@ -52,24 +50,35 @@ const facturasAbierto = ref(
           @click="clientesAbierto = !clientesAbierto"
           :class="[
             'w-full flex items-center justify-between px-4 py-3 rounded-lg text-slate-600 hover:bg-principal-100 hover:text-white transition',
-            (route.name === 'alumnos' || route.name === 'bolos') && 'bg-principal-100 text-slate-800 font-semibold',
+            (route.name === 'alumnos' || route.name === 'bolos') &&
+              'border border-principal text-slate-800 font-semibold',
           ]"
         >
           <span class="font-medium">Clientes</span>
           <svg
-            :class="['w-4 h-4 transition-transform duration-200', clientesAbierto ? 'rotate-180' : '']"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            :class="[
+              'w-4 h-4 transition-transform duration-200',
+              clientesAbierto ? 'rotate-180' : '',
+            ]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
 
         <div v-show="clientesAbierto" class="mt-1 space-y-1 pl-3">
           <AppNavLink :to="{ name: 'alumnos' }" @click="$emit('close')">
-            Alumnos
+            Clases
           </AppNavLink>
           <AppNavLink :to="{ name: 'bolos' }" @click="$emit('close')">
-            Bolos
+            Clientes
           </AppNavLink>
         </div>
       </div>
@@ -80,15 +89,27 @@ const facturasAbierto = ref(
           @click="facturasAbierto = !facturasAbierto"
           :class="[
             'w-full flex items-center justify-between px-4 py-3 rounded-lg text-slate-600 hover:bg-principal-100 hover:text-white transition',
-            (route.name === 'facturas-clases' || route.name === 'facturas-bolos') && 'bg-principal-100 text-slate-800 font-semibold',
+            (route.name === 'facturas-clases' ||
+              route.name === 'facturas-bolos') &&
+              'border border-principal  text-slate-800 font-semibold',
           ]"
         >
           <span class="font-medium">Facturas</span>
           <svg
-            :class="['w-4 h-4 transition-transform duration-200', facturasAbierto ? 'rotate-180' : '']"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            :class="[
+              'w-4 h-4 transition-transform duration-200',
+              facturasAbierto ? 'rotate-180' : '',
+            ]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
 

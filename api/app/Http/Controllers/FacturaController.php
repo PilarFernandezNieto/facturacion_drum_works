@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Factura;
 use App\Models\Cliente;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -20,48 +21,63 @@ class FacturaController extends Controller
      */
     public function generarMasiva(Request $request)
     {
-        $clientes = Cliente::where('tipo', 'alumno')->get();
         $fechaActual = Carbon::now();
         $anio = $fechaActual->year;
+        $mes = $fechaActual->month;
+
+        // 1 query: IDs de alumnos que ya tienen factura C este mes
+        $yaFacturados = Factura::where('serie', 'C')
+            ->whereYear('fecha_emision', $anio)
+            ->whereMonth('fecha_emision', $mes)
+            ->pluck('cliente_id')
+            ->toArray();
+
+        $clientesPendientes = Cliente::where('tipo', 'alumno')
+            ->whereNotIn('id', $yaFacturados)
+            ->get();
+
+        if ($clientesPendientes->isEmpty()) {
+            return response()->json([
+                'mensaje' => 'Todos los alumnos ya tienen factura para este mes.',
+                'total_generadas' => 0,
+            ]);
+        }
+
+        // Último número de Serie C del año actual (1 query, antes del loop)
+        $ultimoNumero = Factura::where('serie', 'C')
+            ->whereYear('fecha_emision', $anio)
+            ->max('numero') ?? 0;
+
+        $concepto = 'Clases batería ' . strtoupper($fechaActual->translatedFormat('F'));
+        $fechaEmision = $fechaActual->toDateString();
         $conteo = 0;
 
-        foreach ($clientes as $cliente) {
-            $existe = Factura::where('cliente_id', $cliente->id)
-                ->where('serie', 'C')
-                ->whereMonth('fecha_emision', $fechaActual->month)
-                ->whereYear('fecha_emision', $fechaActual->year)
-                ->exists();
-
-            if (!$existe) {
-                // Obtener siguiente número de serie C para el año actual
-                $ultimoNumero = Factura::where('serie', 'C')
-                    ->whereYear('fecha_emision', $anio)
-                    ->max('numero') ?? 0;
-
-                $mesNombre = $fechaActual->translatedFormat('F');
-                $concepto = "Clases batería " . strtoupper($mesNombre);
+        DB::transaction(function () use ($clientesPendientes, &$ultimoNumero, &$conteo, $concepto, $fechaEmision) {
+            foreach ($clientesPendientes as $cliente) {
+                $ultimoNumero++;
 
                 Factura::create([
-                    'cliente_id' => $cliente->id,
-                    'serie' => 'C',
-                    'numero' => $ultimoNumero + 1,
-                    'subtotal' => $cliente->cuota_mensual,
-                    'iva_porcentaje' => 0,
-                    'iva_monto' => 0,
+                    'cliente_id'      => $cliente->id,
+                    'serie'           => 'C',
+                    'numero'          => $ultimoNumero,
+                    'subtotal'        => $cliente->cuota_mensual,
+                    'iva_porcentaje'  => 0,
+                    'iva_monto'       => 0,
                     'irpf_porcentaje' => 0,
-                    'irpf_monto' => 0,
-                    'monto' => $cliente->cuota_mensual,
-                    'concepto' => $concepto,
-                    'estado' => 'pendiente',
-                    'fecha_emision' => $fechaActual->toDateString(),
+                    'irpf_monto'      => 0,
+                    'monto'           => $cliente->cuota_mensual,
+                    'concepto'        => $concepto,
+                    'estado'          => 'pendiente',
+                    'fecha_emision'   => $fechaEmision,
                 ]);
+
                 $conteo++;
             }
-        }
+        });
 
         return response()->json([
             'mensaje' => "Se han generado $conteo facturas nuevas para la serie C.",
-            'total_generadas' => $conteo
+            'total_generadas' => $conteo,
         ]);
     }
 
