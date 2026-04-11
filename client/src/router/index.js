@@ -40,9 +40,19 @@ const router = createRouter({
     },
     {
       path: "/facturas",
-      name: "facturas",
+      redirect: { name: "facturas-clases" },
+    },
+    {
+      path: "/facturas/clases",
+      name: "facturas-clases",
       component: () => import("../views/FacturasView.vue"),
-      meta: { requiereAuth: true },
+      meta: { requiereAuth: true, serie: "C" },
+    },
+    {
+      path: "/facturas/bolos",
+      name: "facturas-bolos",
+      component: () => import("../views/FacturasView.vue"),
+      meta: { requiereAuth: true, serie: "B" },
     },
   ],
 });

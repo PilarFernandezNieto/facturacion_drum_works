@@ -1,8 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
-import { storeToRefs } from "pinia";
-import { useClienteStore } from "@/stores/cliente";
+
+import {
+  useClientes,
+  useEliminarCliente,
+} from "@/composables/useClientes";
 
 import { confirmDialog, notifyError, toast } from "@/utils/swal";
 import PrimaryButton from "@/components/buttons/PrimaryButton.vue";
@@ -11,14 +14,13 @@ import ClienteComponent from "@/components/ui/ClienteComponent.vue";
 import ScreenLoader from "@/components/ui/ScreenLoader.vue";
 
 const route = useRoute();
-const clienteStore = useClienteStore();
-const { alumnos, bolos, isLoading } = storeToRefs(clienteStore);
+const { alumnos, bolos, isLoading } = useClientes();
+const { mutateAsync: eliminar } = useEliminarCliente();
 
 const tipo = computed(() => route.meta.tipo);
 const clientesFiltrados = computed(() =>
   tipo.value === "alumno" ? alumnos.value : bolos.value,
 );
-
 const titulo = computed(() =>
   tipo.value === "alumno" ? "Alumnos de Clases" : "Clientes de Bolos",
 );
@@ -54,19 +56,13 @@ async function eliminarCliente(id) {
 
   if (result.isConfirmed) {
     try {
-      await clienteStore.eliminarCliente(id);
+      await eliminar(id);
       toast("Cliente eliminado", "success");
     } catch {
       notifyError("Error", "No se pudo eliminar el cliente");
     }
   }
 }
-
-onMounted(() => {
-  if (clienteStore.clientes.length === 0) {
-    clienteStore.cargarClientes();
-  }
-});
 </script>
 
 <template>
@@ -111,7 +107,9 @@ onMounted(() => {
         v-if="!clientesFiltrados.length"
         class="px-6 py-12 text-center text-slate-400"
       >
-        No hay {{ tipo === "alumno" ? "alumnos" : "clientes de bolos" }} registrados todavía.
+        No hay
+        {{ tipo === "alumno" ? "alumnos" : "clientes de bolos" }} registrados
+        todavía.
       </div>
     </div>
   </div>

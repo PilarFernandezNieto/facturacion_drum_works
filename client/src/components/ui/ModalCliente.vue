@@ -1,6 +1,9 @@
 <script setup>
 import { reactive, computed, watch } from "vue";
-import { useClienteStore } from "@/stores/cliente";
+import {
+  useAgregarCliente,
+  useActualizarCliente,
+} from "@/composables/useClientes";
 import { notifyError, toast } from "@/utils/swal";
 import PrimaryButton from "@/components/buttons/PrimaryButton.vue";
 
@@ -17,7 +20,8 @@ const props = defineProps({
 
 const emit = defineEmits(["close"]);
 
-const clienteStore = useClienteStore();
+const { mutateAsync: agregar } = useAgregarCliente();
+const { mutateAsync: actualizar } = useActualizarCliente();
 
 const formulario = reactive({
   id: null,
@@ -67,10 +71,10 @@ function resetFormulario() {
 async function guardar() {
   try {
     if (editando.value) {
-      await clienteStore.actualizarCliente(formulario.id, formulario);
+      await actualizar({ id: formulario.id, datos: formulario });
       toast("Cliente actualizado");
     } else {
-      await clienteStore.agregarCliente(formulario);
+      await agregar(formulario);
       toast("Cliente creado");
     }
     emit("close");

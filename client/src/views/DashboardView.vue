@@ -1,18 +1,12 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import api from "@/api/axios";
-import { storeToRefs } from "pinia";
-import { useClienteStore } from "@/stores/cliente";
+import { computed } from "vue";
+import { useClientes } from "@/composables/useClientes";
+import { useFacturas } from "@/composables/useFacturas";
 import TarjetaDashboard from "@/components/ui/TarjetaDashboard.vue";
 
-const clienteStore = useClienteStore();
-const { alumnos } = storeToRefs(clienteStore);
+const { alumnos } = useClientes();
+const { facturas } = useFacturas();
 
-// Estado
-const todasFacturas = ref([]);
-const isLoading = ref(true);
-
-// Stats derivadas
 const totalAlumnos = computed(() => alumnos.value.length);
 
 const ahora = new Date();
@@ -20,7 +14,7 @@ const mesActual = ahora.getMonth();
 const anioActual = ahora.getFullYear();
 
 const facturasMesActual = computed(() => {
-  return todasFacturas.value.filter((f) => {
+  return (facturas.value ?? []).filter((f) => {
     if (!f.fecha_emision) return false;
     const [y, m] = f.fecha_emision.split("-").map(Number);
     return y === anioActual && m - 1 === mesActual;
@@ -34,31 +28,14 @@ const recaudadoMes = computed(() => {
 });
 
 const facturasPendientes = computed(() => {
-  return todasFacturas.value.filter((f) => f.estado === "pendiente").length;
+  return (facturas.value ?? []).filter((f) => f.estado === "pendiente").length;
 });
-
-async function cargarStats() {
-  isLoading.value = true;
-  try {
-    const [resFacturas] = await Promise.all([
-      api.get("facturas"),
-      clienteStore.cargarClientes(),
-    ]);
-    todasFacturas.value = resFacturas.data;
-  } catch (error) {
-    console.error("Error al cargar estadísticas:", error);
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-onMounted(cargarStats);
 </script>
 
 <template>
   <div>
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-      <!-- Tarjeta Clientes -->
+      <!-- Tarjeta Alumnos -->
       <TarjetaDashboard label="Alumnos" :value="totalAlumnos">
         <template #icon>
           <svg
@@ -183,7 +160,7 @@ onMounted(cargarStats);
             >Bolos</router-link
           >
           <router-link
-            :to="{ name: 'facturas' }"
+            :to="{ name: 'facturas-clases' }"
             class="bg-principal text-white text-center px-6 py-2 rounded-xl font-bold hover:bg-principal-hover transition"
             >Ver Facturación</router-link
           >

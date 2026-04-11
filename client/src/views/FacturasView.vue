@@ -1,49 +1,75 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { useFacturaStore } from "@/stores/factura";
-import { useClienteStore } from "@/stores/cliente";
-import { storeToRefs } from "pinia";
+import { ref, computed } from "vue";
+import { useRoute } from "vue-router";
+
+import {
+  useFacturas,
+  useGenerarMasiva,
+  useEliminarFactura,
+  useCambiarEstado,
+  nombreMes,
+} from "@/composables/useFacturas";
 
 import { confirmDialog, notifyError, toast } from "@/utils/swal";
 import ScreenLoader from "@/components/ui/ScreenLoader.vue";
 import ModalFacturaBolo from "@/components/ui/ModalFacturaBolo.vue";
 import FacturaComponent from "@/components/ui/FacturaComponent.vue";
 
-const clienteStore = useClienteStore();
-const facturaStore = useFacturaStore();
+const route = useRoute();
+const { facturas, isLoading } = useFacturas();
+const { mutateAsync: generarMasivaFn, isPending: generando } = useGenerarMasiva();
+const { mutateAsync: eliminarFn } = useEliminarFactura();
+const { mutateAsync: cambiarEstadoFn } = useCambiarEstado();
 
-const {
-  isLoading,
-  generando,
-  filtroMes,
-  filtroEstado,
-  mesesDisponibles,
-  facturasFiltradas,
-} = storeToRefs(facturaStore);
+const serie = computed(() => route.meta.serie);
+const titulo = computed(() =>
+  serie.value === "C" ? "Facturas de Clases" : "Facturas de Bolos",
+);
+const subtitulo = computed(() =>
+  serie.value === "C"
+    ? "Ingresos por cuotas mensuales de alumnos (Serie C)."
+    : "Ingresos por conciertos y actuaciones (Serie B).",
+);
 
 const mostrarModalBolo = ref(false);
 
-async function cargarDatos() {
-  try {
-    await Promise.all([
-      facturaStore.cargarFacturas(),
-      clienteStore.cargarClientes(),
-    ]);
-  } catch (error) {
-    console.error("Error al inicializar datos:", error);
-  }
-}
+// Filtros de UI
+const filtroMes = ref("");
+const filtroEstado = ref("");
+
+const mesesDisponibles = computed(() => {
+  const meses = new Set();
+  (facturas.value ?? [])
+    .filter((f) => f.serie === serie.value)
+    .forEach((f) => {
+      const d = new Date(f.fecha_emision);
+      meses.add(
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+      );
+    });
+  return Array.from(meses).sort().reverse();
+});
+
+const facturasFiltradas = computed(() => {
+  return (facturas.value ?? []).filter((f) => {
+    if (f.serie !== serie.value) return false;
+    const matchEstado = !filtroEstado.value || f.estado === filtroEstado.value;
+    const d = new Date(f.fecha_emision);
+    const mesAnio = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const matchMes = !filtroMes.value || mesAnio === filtroMes.value;
+    return matchEstado && matchMes;
+  });
+});
 
 async function generarMasiva() {
   const result = await confirmDialog(
-    "Generar Facturas",
-    "Se van a generar las facturas de todos los alumnos de CLASES para el mes actual. ¿Continuar?",
+    "Generar Facturas de Clases",
+    "Se generarán las facturas del mes actual para todos los alumnos. ¿Continuar?",
     "info",
   );
   if (!result.isConfirmed) return;
-
   try {
-    const r = await facturaStore.generarMasiva();
+    const r = await generarMasivaFn();
     toast(r.mensaje);
   } catch {
     notifyError("Error", "No se pudieron generar las facturas.");
@@ -57,9 +83,8 @@ async function eliminarFactura(id) {
     "warning",
   );
   if (!result.isConfirmed) return;
-
   try {
-    await facturaStore.eliminarFactura(id);
+    await eliminarFn(id);
     toast("Factura eliminada");
   } catch {
     notifyError("Error", "No se pudo eliminar.");
@@ -67,22 +92,14 @@ async function eliminarFactura(id) {
 }
 
 async function toggleEstado(factura) {
+  const nuevoEstado = factura.estado === "pendiente" ? "pagada" : "pendiente";
   try {
-    const { nuevoEstado } = await facturaStore.cambiarEstado(
-      factura.id,
-      factura.estado,
-    );
+    await cambiarEstadoFn({ id: factura.id, nuevoEstado });
     toast(`Factura marcada como ${nuevoEstado}`);
   } catch {
     notifyError("Error", "No se pudo cambiar el estado.");
   }
 }
-const cerrarModal = async () => {
-  mostrarModalBolo.value = false;
-  await facturaStore.cargarFacturas();
-};
-
-onMounted(cargarDatos);
 </script>
 
 <template>
@@ -96,27 +113,29 @@ onMounted(cargarDatos);
       class="flex flex-col gap-4 md:flex-row md:justify-between md:items-center"
     >
       <div>
-        <h2>Control de Facturación</h2>
-        <p class="text-sm text-slate-500">
-          Gestiona tus ingresos de clases (C) y bolos (B).
-        </p>
+        <h2>{{ titulo }}</h2>
+        <p class="text-sm text-slate-500">{{ subtitulo }}</p>
       </div>
-      <div class="flex flex-col gap-3 sm:flex-row">
-        <button
-          @click="mostrarModalBolo = true"
-          class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition shadow-md shadow-purple-200 flex items-center justify-center gap-2 text-sm"
-        >
-          🎸 Nueva Factura Bolo
-        </button>
-        <button
-          @click="generarMasiva"
-          :disabled="generando"
-          class="bg-principal hover:bg-principal-hover text-white px-4 py-2 rounded-lg font-bold transition shadow-md shadow-principal-100 disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
-        >
-          <span v-if="!generando">⚡ Generar Clases (Mes)</span>
-          <span v-else>Generando...</span>
-        </button>
-      </div>
+
+      <!-- Botón Serie C: generación masiva -->
+      <button
+        v-if="serie === 'C'"
+        @click="generarMasiva"
+        :disabled="generando"
+        class="bg-principal hover:bg-principal-hover text-white px-4 py-2 rounded-lg font-bold transition shadow-md shadow-principal-100 disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+      >
+        <span v-if="!generando">⚡ Generar Clases (Mes)</span>
+        <span v-else>Generando...</span>
+      </button>
+
+      <!-- Botón Serie B: nueva factura bolo -->
+      <button
+        v-if="serie === 'B'"
+        @click="mostrarModalBolo = true"
+        class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition shadow-md shadow-purple-200 flex items-center justify-center gap-2 text-sm"
+      >
+        🎸 Nueva Factura Bolo
+      </button>
     </div>
 
     <!-- Filtros -->
@@ -135,7 +154,7 @@ onMounted(cargarDatos);
         >
           <option value="">Todos los meses</option>
           <option v-for="m in mesesDisponibles" :key="m" :value="m">
-            {{ facturaStore.nombreMes(m) }}
+            {{ nombreMes(m) }}
           </option>
         </select>
       </div>
@@ -151,21 +170,14 @@ onMounted(cargarDatos);
           class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 font-bold cursor-pointer"
         >
           <option value="">Cualquier estado</option>
-          <option value="pendiente" class="text-amber-600 font-bold">
-            PENDIENTE
-          </option>
-          <option value="pagada" class="text-emerald-600 font-bold">
-            PAGADA
-          </option>
+          <option value="pendiente">PENDIENTE</option>
+          <option value="pagada">PAGADA</option>
         </select>
       </div>
 
       <button
         v-if="filtroMes || filtroEstado"
-        @click="
-          filtroMes = '';
-          filtroEstado = '';
-        "
+        @click="filtroMes = ''; filtroEstado = ''"
         class="ml-auto text-xs font-bold text-red-500 hover:text-principal flex items-center gap-1 transition"
       >
         ✕ Limpiar filtros
@@ -176,15 +188,6 @@ onMounted(cargarDatos);
     <div
       class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
     >
-      <!--
-        Cabecera desktop. Columnas en el mismo orden y tamaño que FacturaRow:
-          col-span-2  Código
-          col-span-4  Cliente / Concepto
-          col-span-2  Fecha
-          col-span-2  Monto
-          col-span-1  Estado
-          col-span-1  Acciones
-      -->
       <div
         class="hidden md:grid md:grid-cols-12 md:gap-2 px-4 py-3 bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider"
       >
@@ -196,7 +199,6 @@ onMounted(cargarDatos);
         <div class="col-span-1 text-right">Acc.</div>
       </div>
 
-      <!-- Filas -->
       <FacturaComponent
         v-for="factura in facturasFiltradas"
         :key="factura.id"
@@ -205,7 +207,6 @@ onMounted(cargarDatos);
         @eliminar="eliminarFactura"
       />
 
-      <!-- Sin resultados -->
       <div
         v-if="!facturasFiltradas.length"
         class="px-6 py-12 text-center text-slate-400"
@@ -214,7 +215,7 @@ onMounted(cargarDatos);
       </div>
     </div>
 
-    <!-- Modal factura bolo -->
-    <ModalFacturaBolo v-if="mostrarModalBolo" @close="cerrarModal" />
+    <!-- Modal factura bolo (solo Serie B) -->
+    <ModalFacturaBolo v-if="mostrarModalBolo" @close="mostrarModalBolo = false" />
   </div>
 </template>

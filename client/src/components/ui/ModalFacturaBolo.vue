@@ -1,15 +1,13 @@
 <script setup>
 import { reactive, computed } from "vue";
-import { useFacturaStore } from "@/stores/factura";
-import { useClienteStore } from "@/stores/cliente";
-import { storeToRefs } from "pinia";
+import { useClientes } from "@/composables/useClientes";
+import { useGuardarBolo } from "@/composables/useFacturas";
 import { notifyError, toast } from "@/utils/swal";
 
 const emit = defineEmits(["close"]);
 
-const facturaStore = useFacturaStore();
-const clienteStore = useClienteStore();
-const { clientes } = storeToRefs(clienteStore);
+const { clientes } = useClientes();
+const { mutateAsync: guardarBolo } = useGuardarBolo();
 
 const formulario = reactive({
   cliente_id: "",
@@ -42,7 +40,7 @@ function limpiarFormulario() {
 
 async function guardar() {
   try {
-    await facturaStore.guardarBolo(formulario);
+    await guardarBolo(formulario);
     limpiarFormulario();
     emit("close");
     toast("Factura B generada con éxito");

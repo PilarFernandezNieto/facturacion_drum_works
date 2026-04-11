@@ -14,6 +14,9 @@ const route = useRoute();
 const clientesAbierto = ref(
   route.name === "alumnos" || route.name === "bolos",
 );
+const facturasAbierto = ref(
+  route.name === "facturas-clases" || route.name === "facturas-bolos",
+);
 </script>
 
 <template>
@@ -71,9 +74,33 @@ const clientesAbierto = ref(
         </div>
       </div>
 
-      <AppNavLink :to="{ name: 'facturas' }" @click="$emit('close')"
-        >Facturas</AppNavLink
-      >
+      <!-- Dropdown Facturas -->
+      <div>
+        <button
+          @click="facturasAbierto = !facturasAbierto"
+          :class="[
+            'w-full flex items-center justify-between px-4 py-3 rounded-lg text-slate-600 hover:bg-principal-100 hover:text-white transition',
+            (route.name === 'facturas-clases' || route.name === 'facturas-bolos') && 'bg-principal-100 text-slate-800 font-semibold',
+          ]"
+        >
+          <span class="font-medium">Facturas</span>
+          <svg
+            :class="['w-4 h-4 transition-transform duration-200', facturasAbierto ? 'rotate-180' : '']"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <div v-show="facturasAbierto" class="mt-1 space-y-1 pl-3">
+          <AppNavLink :to="{ name: 'facturas-clases' }" @click="$emit('close')">
+            Clases
+          </AppNavLink>
+          <AppNavLink :to="{ name: 'facturas-bolos' }" @click="$emit('close')">
+            Bolos
+          </AppNavLink>
+        </div>
+      </div>
     </nav>
 
     <div class="p-4 border-t border-slate-100">
