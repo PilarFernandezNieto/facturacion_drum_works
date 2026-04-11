@@ -1,6 +1,6 @@
 # Drum Works — Cliente (Vue 3)
 
-Frontend de la aplicación de gestión de facturación para la academia **Drum Works**. Desarrollado con Vue 3 Composition API, Pinia y Tailwind CSS 4.
+Frontend de la aplicación de gestión de facturación para **Drum Works**, negocio de un músico autónomo que combina clases de batería y actuaciones en conciertos. Desarrollado con Vue 3 Composition API, TanStack Query y Tailwind CSS 4.
 
 ---
 
@@ -8,69 +8,85 @@ Frontend de la aplicación de gestión de facturación para la academia **Drum W
 
 - [Vue 3](https://vuejs.org/) — Composition API con `<script setup>`
 - [Vite](https://vitejs.dev/) — Bundler y servidor de desarrollo
-- [Pinia](https://pinia.vuejs.org/) — Gestión de estado
-- [Vue Router](https://router.vuejs.org/) — Enrutamiento SPA
+- [TanStack Query](https://tanstack.com/query/latest) — Caché y sincronización de datos del servidor
+- [Pinia](https://pinia.vuejs.org/) — Estado de sesión (autenticación)
+- [Vue Router](https://router.vuejs.org/) — Enrutamiento SPA con guards
 - [Tailwind CSS 4](https://tailwindcss.com/) — Estilos
-- [Axios](https://axios-http.com/) — Peticiones HTTP
+- [Axios](https://axios-http.com/) — Peticiones HTTP con interceptores
 - [SweetAlert2](https://sweetalert2.github.io/) — Diálogos y notificaciones
-
+- [JSZip](https://stuk.github.io/jszip/) — Descarga masiva de PDFs en ZIP
 
 ---
 
 ## Estructura del proyecto
 
 ```
-client/
-├── src/
-│   ├── api/
-│   │   └── axios.js            # Instancia de Axios con interceptores
-│   ├── assets/
-│   │   └── img/                # Imágenes estáticas
-│   ├── components/
-│   │   ├── buttons/
-│   │   │   └── PrimaryButton.vue
-│   │   └── ui/
-│   │       ├── ClienteComponent.vue   # Fila de cliente (lista)
-│   │       ├── FacturaComponent.vue   # Fila de factura (lista)
-│   │       ├── ModalCliente.vue       # Modal crear/editar cliente
-│   │       ├── ModalFacturaBolo.vue   # Modal nueva factura de bolo
-│   │       └── ScreenLoader.vue       # Pantalla de carga
-│   ├── stores/
-│   │   ├── auth.js             # Autenticación (Sanctum)
-│   │   ├── cliente.js          # CRUD de clientes
-│   │   └── factura.js          # CRUD de facturas y filtros
-│   ├── utils/
-│   │   └── swal.js             # Helpers de SweetAlert2
-│   ├── views/
+client/src/
+├── api/
+│   └── axios.js                     # Instancia de Axios con interceptores (token Bearer, 401)
+├── composables/
+│   ├── useClientes.js               # Queries y mutaciones de clientes (TanStack)
+│   ├── useFacturas.js               # Queries, mutaciones y descarga de PDFs (TanStack)
+│   └── usePaginacion.js             # Paginación reactiva reutilizable
+├── components/
+│   ├── buttons/
+│   │   └── PrimaryButton.vue
+│   └── ui/
+│       ├── AppHeader.vue
+│       ├── AppSidebar.vue           # Navegación con dropdowns (Clientes / Facturas)
+│       ├── ClienteComponent.vue     # Fila de cliente
+│       ├── FacturaComponent.vue     # Fila de factura
+│       ├── ModalCliente.vue         # Crear / editar cliente
+│       ├── ModalFacturaBolo.vue     # Nueva factura de bolo (Serie B)
+│       ├── ModalHistorialCliente.vue # Historial de facturas de un cliente
+│       ├── PaginacionComponent.vue  # Paginación con ellipsis
+│       ├── ScreenLoader.vue
+│       └── TarjetaDashboard.vue
+├── stores/
+│   └── auth.js                      # Token y sesión de usuario (Pinia)
+├── utils/
+│   └── swal.js                      # Helpers de SweetAlert2
+├── views/
+│   ├── auth/
 │   │   ├── LoginView.vue
-│   │   ├── HomeView.vue
-│   │   ├── ClientesView.vue
-│   │   └── FacturasView.vue
-│   ├── App.vue
-│   └── main.js
-├── public/
-│   └── favicon.ico
-├── .env.example
-├── .env.production             # Variables de entorno para producción
-├── tailwind.config.js
-├── vite.config.js
-└── package.json
+│   │   └── RegistroView.vue
+│   ├── DashboardView.vue            # Estadísticas del mes
+│   ├── ClientesView.vue             # Lista de alumnos o bolos según ruta
+│   └── FacturasView.vue             # Lista de facturas C o B según ruta
+├── router/index.js
+├── App.vue
+└── main.js
 ```
+
+---
+
+## Rutas de la aplicación
+
+| Ruta | Nombre | Descripción |
+|------|--------|-------------|
+| `/` | `dashboard` | Panel de estadísticas |
+| `/clientes/alumnos` | `alumnos` | Listado de alumnos de clases |
+| `/clientes/bolos` | `bolos` | Listado de clientes de bolos |
+| `/facturas/clases` | `facturas-clases` | Facturas Serie C (clases) |
+| `/facturas/bolos` | `facturas-bolos` | Facturas Serie B (bolos) |
+| `/login` | `login` | Acceso |
+
+Las rutas `/clientes` y `/facturas` redirigen automáticamente a su sub-ruta por defecto.
 
 ---
 
 ## Variables de entorno
 
-Crea un archivo `.env` en la raíz de `client/` basándote en `.env.example`:
+Crea `.env` basándote en `.env.example`:
 
 ```env
-VITE_APP_BACKEND_URL=http://localhost:8000/api
+VITE_APP_BACKEND_URL=http://localhost:8000
 ```
 
 Para producción usa `.env.production`:
 
 ```env
-VITE_APP_BACKEND_URL=https://tudominio.com/api
+VITE_APP_BACKEND_URL=https://tudominio.com
 ```
 
 ---
@@ -88,18 +104,33 @@ npm run dev
 npm run build
 ```
 
-El servidor de desarrollo arranca en `http://localhost:5173` y hace proxy de las peticiones API al backend en `http://localhost:8000`.
+El servidor de desarrollo arranca en `http://localhost:5173`.
 
 ---
 
 ## Despliegue
 
-1. Configura `.env.production` con la URL del backend en producción
+1. Configura `.env.production` con la URL del backend
 2. Genera el build:
    ```bash
    npm run build
    ```
-3. Sube el contenido de la carpeta `dist/` a la carpeta `public/` del servidor Laravel
+3. Sube el contenido de `dist/` a la carpeta `public/` del servidor Laravel
+
+---
+
+## Arquitectura de datos
+
+Los datos del servidor se gestionan con **TanStack Query**, no con Pinia.
+
+| Composable | Query key | `staleTime` | Descripción |
+|---|---|---|---|
+| `useClientes()` | `['clientes']` | 5 min | Lista completa; `alumnos` y `bolos` son computed |
+| `useFacturas()` | `['facturas']` | 1 min | Lista completa; el filtrado por serie ocurre en el cliente |
+
+Las mutaciones (`useAgregarCliente`, `useCambiarEstado`, etc.) invalidan su query key al completarse. `useCambiarEstado` aplica **actualización optimista**: el cambio de estado es instantáneo en UI y se revierte si el servidor falla.
+
+**Pinia** solo gestiona la sesión de usuario (`stores/auth.js`): token en `localStorage`, usuario en memoria.
 
 ---
 
@@ -107,27 +138,28 @@ El servidor de desarrollo arranca en `http://localhost:5173` y hace proxy de las
 
 ### Autenticación
 - Login con email y contraseña mediante Laravel Sanctum
-- Token almacenado en memoria (Pinia store)
+- Token Bearer almacenado en `localStorage`
 - Rutas protegidas con guards de Vue Router
+- Redirección automática a login en error 401
 
-### Gestión de Clientes
-- Listado con filtro por tipo: **Alumnos** (clases) y **Bolos** (conciertos)
+### Clientes
+- Vistas separadas para **Alumnos** (`/clientes/alumnos`) y **Bolos** (`/clientes/bolos`)
 - Crear, editar y eliminar clientes
-- Campos específicos según el tipo de cliente
+- El modal de creación pre-rellena el tipo según la sección activa
+- Paginación de 10 registros por página
+- Historial de facturas por cliente
 
-### Gestión de Facturas
-- Listado con filtros por mes y estado de pago
-- **Serie C** — Generación masiva de facturas mensuales para todos los alumnos
-- **Serie B** — Creación manual de facturas para bolos (conciertos)
-- Cambio de estado entre *Pendiente* y *Pagada* con un clic
-- Descarga de factura en PDF
-- Eliminación de facturas
+### Facturas
+- Vistas separadas para **Clases** (`/facturas/clases`) y **Bolos** (`/facturas/bolos`)
+- Filtros por mes y estado de pago (locales, no afectan al caché)
+- **Serie C** — Botón "Generar Clases (Mes)": crea facturas masivas para todos los alumnos el día 1 de cada mes
+- **Serie B** — Botón "Nueva Factura Bolo": creación manual con cálculo de IVA e IRPF en tiempo real
+- Cambio de estado Pendiente/Pagada con actualización optimista
+- Descarga de PDF individual
+- Descarga masiva de PDFs en ZIP (según los filtros activos)
+- Paginación de 10 registros por página
+- Eliminación con confirmación
 
----
-
-## Diseño responsive
-
-La interfaz está adaptada para móvil, tablet y escritorio:
-- Sidebar con overlay en móvil
-- Listas de clientes y facturas en formato tarjeta en móvil y tabla en escritorio
-- Modales adaptados a pantalla completa en móvil
+### Dashboard
+- Tarjetas con: número de alumnos, recaudación del mes (facturas pagadas) y facturas pendientes totales
+- Accesos directos a Alumnos, Bolos y Facturación

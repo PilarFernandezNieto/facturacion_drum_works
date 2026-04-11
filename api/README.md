@@ -1,15 +1,15 @@
 # Drum Works — API (Laravel 13)
 
-Backend REST de la aplicación de gestión de facturación para la academia **Drum Works**. Desarrollado con Laravel 13 y autenticación mediante Laravel Sanctum.
+Backend REST de la aplicación de gestión de facturación para **Drum Works**, negocio de un músico autónomo que combina clases de batería y actuaciones en conciertos. Desarrollado con Laravel 13 y autenticación mediante Laravel Sanctum.
 
 ---
 
 ## Tecnologías
 
 - [Laravel 13](https://laravel.com/) — Framework PHP
-- [Laravel Sanctum](https://laravel.com/docs/sanctum) — Autenticación por token
+- [Laravel Sanctum](https://laravel.com/docs/sanctum) — Autenticación por token Bearer
 - [Laravel DomPDF](https://github.com/barryvdh/laravel-dompdf) — Generación de PDFs
-- MySQL 8.0
+- SQLite — Base de datos (desarrollo y producción ligera)
 
 **Requisito:** PHP 8.4
 
@@ -21,24 +21,29 @@ Backend REST de la aplicación de gestión de facturación para la academia **Dr
 api/
 ├── app/
 │   ├── Http/
-│   │   └── Controllers/
-│   │       ├── AuthController.php
-│   │       ├── ClienteController.php
-│   │       └── FacturaController.php
+│   │   ├── Controllers/
+│   │   │   ├── AuthController.php       # Login, registro, logout
+│   │   │   ├── ClienteController.php    # CRUD clientes (alumnos y bolos)
+│   │   │   └── FacturaController.php    # CRUD facturas, generación masiva, PDF
+│   │   ├── Middleware/
+│   │   │   └── QueryTokenMiddleware.php # Permite pasar token por query param (?token=)
+│   │   └── Requests/
+│   │       ├── LoginRequest.php
+│   │       └── RegisterRequest.php
 │   └── Models/
 │       ├── User.php
 │       ├── Cliente.php
-│       └── Factura.php
+│       └── Factura.php                  # Incluye accessor 'codigo' (ej: 001C/2026)
 ├── database/
-│   └── migrations/
+│   ├── migrations/
+│   └── database.sqlite
 ├── resources/
 │   └── views/
 │       └── pdf/
-│           └── factura.blade.php   # Plantilla PDF de factura
+│           └── factura.blade.php        # Plantilla PDF de factura
 ├── routes/
-│   ├── api.php                     # Rutas de la API
+│   ├── api.php                          # Rutas de la API
 │   └── web.php
-├── storage/
 ├── .env.example
 └── composer.json
 ```
@@ -47,21 +52,16 @@ api/
 
 ## Variables de entorno
 
-Copia `.env.example` a `.env` y configura:
+Copia `.env.example` a `.env` y ajusta:
 
 ```env
 APP_NAME="Drum Works"
 APP_ENV=local
-APP_KEY=
+APP_KEY=                    # php artisan key:generate
 APP_DEBUG=true
 APP_URL=http://localhost:8000
 
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=drum_works
-DB_USERNAME=root
-DB_PASSWORD=
+DB_CONNECTION=sqlite        # El archivo database/database.sqlite se crea con migrate
 
 SESSION_DRIVER=file
 CACHE_STORE=file
@@ -94,30 +94,32 @@ La API estará disponible en `http://localhost:8000/api`.
 
 ```bash
 # Instalar dependencias sin paquetes de desarrollo
-php8.4-cli /ruta/a/composer.phar install --no-dev --optimize-autoloader
+composer install --no-dev --optimize-autoloader
 
 # Configurar .env de producción y generar clave
-php8.4-cli artisan key:generate
+php artisan key:generate
 
 # Ejecutar migraciones
-php8.4-cli artisan migrate --force
+php artisan migrate --force
 
 # Cachear configuración, rutas y vistas
-php8.4-cli artisan config:cache
-php8.4-cli artisan route:cache
-php8.4-cli artisan view:cache
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 
 # Permisos de carpetas
 chmod -R 775 storage bootstrap/cache
 ```
 
-El Document Root del servidor web debe apuntar a la carpeta `public/`.
+El Document Root debe apuntar a la carpeta `public/`.
+
+> **Nota de numeración en producción:** al desplegar por primera vez con facturas previamente emitidas en otro sistema, hay que asegurarse de que `max(numero)` de cada serie arranque desde el número correcto. La forma recomendada es importar los registros anteriores o ejecutar un seeder con el número de partida antes de emitir la primera factura real.
 
 ---
 
 ## Endpoints de la API
 
-Todas las rutas protegidas requieren el header:
+Todas las rutas protegidas requieren:
 ```
 Authorization: Bearer {token}
 ```
@@ -135,40 +137,43 @@ Authorization: Bearer {token}
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/api/clientes` | Listar todos los clientes |
+| GET | `/api/clientes` | Listar clientes (acepta `?tipo=alumno\|bolo`) |
 | POST | `/api/clientes` | Crear cliente |
 | GET | `/api/clientes/{id}` | Ver cliente |
 | PUT | `/api/clientes/{id}` | Actualizar cliente |
-| DELETE | `/api/clientes/{id}` | Eliminar cliente |
+| DELETE | `/api/clientes/{id}` | Eliminar cliente (elimina también sus facturas) |
 
-Los clientes tienen dos tipos:
-- `alumno` — Alumnos de clases, con cuota mensual y curso/grupo
-- `bolo` — Clientes para conciertos, con precio base
+Tipos de cliente:
+- `alumno` — Alumnos de clases, con cuota mensual fija y grupo/curso
+- `bolo` — Clientes para conciertos/actuaciones, con precio base
 
 ### Facturas
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/api/facturas` | Listar todas las facturas |
-| POST | `/api/facturas` | Crear factura |
-| POST | `/api/facturas/generar-masiva` | Generar facturas mensuales para todos los alumnos |
-| PUT | `/api/facturas/{id}/estado` | Cambiar estado (pendiente/pagada) |
+| GET | `/api/facturas` | Listar todas las facturas (con cliente eager-loaded) |
+| POST | `/api/facturas` | Crear factura manual (Serie B) |
+| POST | `/api/facturas/generar-masiva` | Generar facturas del mes para todos los alumnos (Serie C) |
+| PUT | `/api/facturas/{id}/estado` | Cambiar estado (`pendiente` / `pagada`) |
 | DELETE | `/api/facturas/{id}` | Eliminar factura |
 | GET | `/api/facturas/{id}/pdf` | Descargar factura en PDF |
 
-Las facturas tienen dos series:
-- **Serie C** — Clases mensuales, generadas de forma masiva
-- **Serie B** — Bolos (conciertos), creadas manualmente con IVA 10% e IRPF 15%
+Series de factura:
+- **Serie C** — Clases mensuales. Generación masiva el día 1 de cada mes. Sin IVA ni IRPF.
+- **Serie B** — Bolos (conciertos). Creación manual con IVA 10% e IRPF 15%.
+
+La numeración es correlativa por serie y año (ej: `001C/2026`, `002C/2026`). La generación masiva calcula el último número antes del bucle y lo incrementa dentro de una transacción, garantizando secuencialidad y atomicidad.
 
 ---
 
 ## Modelo de datos
 
 ### Cliente
+
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
 | nombre | string | Nombre completo o razón social |
-| nif_cif | string | Identificación fiscal |
+| nif_cif | string | DNI / CIF |
 | email | string | |
 | telefono | string | |
 | direccion | string | Dirección fiscal |
@@ -176,16 +181,18 @@ Las facturas tienen dos series:
 | localidad | string | |
 | provincia | string | |
 | tipo | enum | `alumno` o `bolo` |
-| curso | string | Solo para alumnos |
-| cuota_mensual | decimal | Cuota mensual o precio base bolo |
+| curso | string | Grupo/nivel, solo para alumnos |
+| cuota_mensual | decimal | Cuota mensual (alumnos) o precio base bolo |
 
 ### Factura
+
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| codigo | string | Código único (ej: `001C/2025`) |
-| serie | enum | `C` (clases) o `B` (bolos) |
-| cliente_id | foreign key | |
-| concepto | string | Descripción del servicio |
+| codigo | *virtual* | Generado: `001C/2026`. No se almacena en BD |
+| serie | char(1) | `C` (clases) o `B` (bolos) |
+| numero | integer | Correlativo por serie y año |
+| cliente_id | foreign key | Relación con Cliente |
+| concepto | text | Descripción del servicio |
 | fecha_emision | date | |
 | fecha_evento | date | Solo para bolos |
 | subtotal | decimal | Base imponible |
@@ -193,5 +200,5 @@ Las facturas tienen dos series:
 | iva_monto | decimal | |
 | irpf_porcentaje | decimal | |
 | irpf_monto | decimal | |
-| monto | decimal | Total a percibir |
+| monto | decimal | Total líquido a percibir |
 | estado | enum | `pendiente` o `pagada` |
