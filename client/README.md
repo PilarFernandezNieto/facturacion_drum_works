@@ -1,6 +1,6 @@
-# Drum Works — Cliente (Vue 3)
+# DrummerWorks — Cliente (Vue 3)
 
-Frontend de la aplicación de gestión de facturación para **Drum Works**, negocio de un músico autónomo que combina clases de batería y actuaciones en conciertos. Desarrollado con Vue 3 Composition API, TanStack Query y Tailwind CSS 4.
+Frontend de la aplicación de gestión de facturación para **DrummerWorks**, negocio de un músico autónomo que combina clases de batería y actuaciones en conciertos. Desarrollado con Vue 3 Composition API, TanStack Query y Tailwind CSS 4.
 
 ---
 
@@ -162,4 +162,4 @@ Las mutaciones (`useAgregarCliente`, `useCambiarEstado`, etc.) invalidan su quer
 
 ### Dashboard
 - Tarjetas con: número de alumnos, recaudación del mes (facturas pagadas) y facturas pendientes totales
-- Accesos directos a Alumnos, Bolos y Facturación
+- Accesos directos a Clases, Bolos y Facturación

@@ -1,6 +1,6 @@
-# Drum Works — API (Laravel 13)
+# DrummerWorks — API (Laravel 13)
 
-Backend REST de la aplicación de gestión de facturación para **Drum Works**, negocio de un músico autónomo que combina clases de batería y actuaciones en conciertos. Desarrollado con Laravel 13 y autenticación mediante Laravel Sanctum.
+Backend REST de la aplicación de gestión de facturación para **DrummerWorks**, negocio de un músico autónomo que combina clases de batería y actuaciones en conciertos. Desarrollado con Laravel 13 y autenticación mediante Laravel Sanctum.
 
 ---
 
@@ -9,7 +9,7 @@ Backend REST de la aplicación de gestión de facturación para **Drum Works**, 
 - [Laravel 13](https://laravel.com/) — Framework PHP
 - [Laravel Sanctum](https://laravel.com/docs/sanctum) — Autenticación por token Bearer
 - [Laravel DomPDF](https://github.com/barryvdh/laravel-dompdf) — Generación de PDFs
-- SQLite — Base de datos (desarrollo y producción ligera)
+- MySQL 8.0 — Base de datos
 
 **Requisito:** PHP 8.4
 
@@ -55,13 +55,18 @@ api/
 Copia `.env.example` a `.env` y ajusta:
 
 ```env
-APP_NAME="Drum Works"
+APP_NAME="DrummerWorks"
 APP_ENV=local
 APP_KEY=                    # php artisan key:generate
 APP_DEBUG=true
 APP_URL=http://localhost:8000
 
-DB_CONNECTION=sqlite        # El archivo database/database.sqlite se crea con migrate
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=drummerworks
+DB_USERNAME=root
+DB_PASSWORD=
 
 SESSION_DRIVER=file
 CACHE_STORE=file
