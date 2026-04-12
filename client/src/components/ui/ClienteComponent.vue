@@ -49,11 +49,12 @@ const emit = defineEmits(["editar", "eliminar", "ver-historial"]);
         <span v-else class="text-xs italic">Cliente bolos</span>
       </div>
 
-      <!-- Cuota -->
+      <!-- Cuota (solo alumnos) -->
       <div class="md:col-span-2 md:text-center">
-        <span class="font-bold text-slate-900"
-          >{{ cliente.cuota_mensual }}€</span
-        >
+        <span v-if="cliente.tipo === 'alumno'" class="font-bold text-slate-900">
+          {{ cliente.cuota_mensual }}€
+        </span>
+        <span v-else class="text-slate-300">—</span>
       </div>
 
       <!-- Acciones -->

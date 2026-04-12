@@ -37,7 +37,7 @@ class ClienteController extends Controller
             'localidad' => 'nullable|string|max:255',
             'provincia' => 'nullable|string|max:255',
             'curso' => 'nullable|string|max:100',
-            'cuota_mensual' => 'required|numeric|min:0',
+            'cuota_mensual' => 'required_if:tipo,alumno|nullable|numeric|min:0',
             'tipo' => 'required|in:alumno,bolo',
         ];
 
@@ -74,7 +74,7 @@ class ClienteController extends Controller
             'localidad' => 'nullable|string|max:255',
             'provincia' => 'nullable|string|max:255',
             'curso' => 'nullable|string|max:100',
-            'cuota_mensual' => 'sometimes|required|numeric|min:0',
+            'cuota_mensual' => 'sometimes|nullable|numeric|min:0',
             'tipo' => 'sometimes|required|in:alumno,bolo',
         ];
 

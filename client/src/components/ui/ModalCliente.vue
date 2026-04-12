@@ -146,7 +146,9 @@ function cerrar() {
             </div>
 
             <!-- NIF / Cuota -->
-            <div class="col-span-12 lg:col-span-6">
+            <div
+              :class="formulario.tipo === 'bolo' ? 'col-span-12' : 'col-span-12 lg:col-span-6'"
+            >
               <label class="block text-sm font-medium text-slate-700 mb-1">
                 NIF / CIF
               </label>
@@ -157,14 +159,12 @@ function cerrar() {
               />
             </div>
 
-            <div class="col-span-12 lg:col-span-6">
+            <div
+              v-if="formulario.tipo === 'alumno'"
+              class="col-span-12 lg:col-span-6 animate-in slide-in-from-top-2"
+            >
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                {{
-                  formulario.tipo === "alumno"
-                    ? "Cuota Mensual"
-                    : "Precio Base Bolo"
-                }}
-                (€)
+                Cuota Mensual (€)
               </label>
               <input
                 v-model="formulario.cuota_mensual"
