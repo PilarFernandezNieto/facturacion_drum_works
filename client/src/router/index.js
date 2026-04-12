@@ -14,7 +14,7 @@ const router = createRouter({
       path: "/registro",
       name: "registro",
       component: () => import("../views/auth/RegistroView.vue"),
-      meta: { requiereAuth: true },
+      meta: { libre: true },
     },
     {
       path: "/",
