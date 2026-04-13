@@ -39,6 +39,7 @@ class ClienteController extends Controller
             'curso' => 'nullable|string|max:100',
             'cuota_mensual' => 'required_if:tipo,alumno|nullable|numeric|min:0',
             'tipo' => 'required|in:alumno,bolo',
+            'activo' => 'boolean',
         ];
 
         $datosValidados = $request->validate($reglas);
@@ -76,6 +77,7 @@ class ClienteController extends Controller
             'curso' => 'nullable|string|max:100',
             'cuota_mensual' => 'sometimes|nullable|numeric|min:0',
             'tipo' => 'sometimes|required|in:alumno,bolo',
+            'activo' => 'sometimes|boolean',
         ];
 
         $datosValidados = $request->validate($reglas);

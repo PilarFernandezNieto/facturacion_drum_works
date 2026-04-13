@@ -20,7 +20,12 @@ class Cliente extends Model
         'provincia',
         'curso',
         'cuota_mensual',
-        'tipo' // alumno o bolo
+        'tipo',
+        'activo',
+    ];
+
+    protected $casts = [
+        'activo' => 'boolean',
     ];
 
     public function facturas()

@@ -186,6 +186,7 @@ La numeración es correlativa por serie y año (ej: `001C/2026`, `002C/2026`). L
 | localidad | string | |
 | provincia | string | |
 | tipo | enum | `alumno` o `bolo` |
+| activo | boolean | Solo alumnos. `true` = se incluye en la facturación masiva mensual |
 | curso | string | Grupo/nivel, solo para alumnos |
 | cuota_mensual | decimal | Cuota mensual fija. Solo para alumnos. |
 

@@ -146,13 +146,14 @@ Las mutaciones (`useAgregarCliente`, `useCambiarEstado`, etc.) invalidan su quer
 - Vistas separadas para **Alumnos** (`/clientes/alumnos`) y **Bolos** (`/clientes/bolos`)
 - Crear, editar y eliminar clientes
 - El modal de creación pre-rellena el tipo según la sección activa
+- Toggle **Activo/Inactivo** para alumnos: los inactivos se excluyen de la facturación masiva y aparecen atenuados en la lista
 - Paginación de 10 registros por página
 - Historial de facturas por cliente
 
 ### Facturas
 - Vistas separadas para **Clases** (`/facturas/clases`) y **Bolos** (`/facturas/bolos`)
 - Filtros por mes y estado de pago (locales, no afectan al caché)
-- **Serie C** — Botón "Generar Clases (Mes)": crea facturas masivas para todos los alumnos el día 1 de cada mes
+- **Serie C** — Botón "Generar Clases (Mes)": crea facturas masivas para todos los alumnos **activos** el día 1 de cada mes
 - **Serie B** — Botón "Nueva Factura Bolo": creación manual con cálculo de IVA e IRPF en tiempo real
 - Cambio de estado Pendiente/Pagada con actualización optimista
 - Descarga de PDF individual

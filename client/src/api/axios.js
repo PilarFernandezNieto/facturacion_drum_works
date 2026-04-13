@@ -8,6 +8,7 @@ export const clearToken = () => localStorage.removeItem("access_token");
 
 const getBaseURL = () => {
   const envUrl = import.meta.env.VITE_APP_BACKEND_URL;
+  console.log(envUrl);
   return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
 };
 

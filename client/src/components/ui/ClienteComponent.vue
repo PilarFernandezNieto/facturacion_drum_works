@@ -16,7 +16,7 @@ const emit = defineEmits(["editar", "eliminar", "ver-historial"]);
     <!-- Fila superior en móvil: nombre + badges de tipo -->
     <div class="flex items-start justify-between gap-2 md:contents">
       <!-- Nombre / NIF -->
-      <div class="md:col-span-4 font-medium text-slate-800 min-w-0">
+      <div class="md:col-span-3 font-medium text-slate-800 min-w-0">
         <span class="block truncate">{{ cliente.nombre }}</span>
         <span
           v-if="cliente.nif_cif"
@@ -26,7 +26,7 @@ const emit = defineEmits(["editar", "eliminar", "ver-historial"]);
         </span>
       </div>
 
-      <!-- Tipo (badge) — en móvil aparece arriba a la derecha, en desktop en su columna -->
+      <!-- Tipo (badge) -->
       <div class="md:col-span-2 shrink-0">
         <span
           :class="
@@ -41,12 +41,59 @@ const emit = defineEmits(["editar", "eliminar", "ver-historial"]);
       </div>
     </div>
 
-    <!-- Fila inferior en móvil: info + cuota + acciones -->
+    <!-- Fila inferior en móvil: info + activo + cuota + acciones -->
     <div class="flex items-center justify-between gap-2 md:contents">
       <!-- Curso / Info -->
       <div class="md:col-span-2 text-sm text-slate-500 min-w-0">
         <span v-if="cliente.tipo === 'alumno'">{{ cliente.curso || "—" }}</span>
         <span v-else class="text-xs italic">Cliente bolos</span>
+      </div>
+
+      <!-- Activo (solo alumnos) -->
+      <div class="md:col-span-1 md:flex md:justify-center">
+        <template v-if="cliente.tipo === 'alumno'">
+          <!-- Activo: check verde -->
+          <svg
+            v-if="cliente.activo"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            title="Activo"
+          >
+            <rect x="2" y="2" width="20" height="20" rx="4" fill="#d1fae5" />
+            <path
+              d="M7 12.5L10.5 16L17 9"
+              stroke="#16a34a"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <!-- Inactivo: caja vacía -->
+          <svg
+            v-else
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            title="Inactivo"
+          >
+            <rect
+              x="2.75"
+              y="2.75"
+              width="18.5"
+              height="18.5"
+              rx="3.25"
+              stroke="#cbd5e1"
+              stroke-width="1.5"
+              fill="white"
+            />
+          </svg>
+        </template>
+        <span v-else class="text-slate-300">—</span>
       </div>
 
       <!-- Cuota (solo alumnos) -->

@@ -36,6 +36,7 @@ const formulario = reactive({
   curso: "",
   cuota_mensual: 0,
   tipo: "alumno",
+  activo: true,
 });
 
 const editando = computed(() => !!props.cliente);
@@ -66,6 +67,7 @@ function resetFormulario() {
   formulario.curso = "";
   formulario.cuota_mensual = 0;
   formulario.tipo = props.tipoDefault;
+  formulario.activo = true;
 }
 
 async function guardar() {
@@ -188,6 +190,37 @@ function cerrar() {
                 type="text"
                 class="w-full px-4 py-2 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-principal-200"
               />
+            </div>
+
+            <!-- Activo (solo alumnos) -->
+            <div
+              v-if="formulario.tipo === 'alumno'"
+              class="col-span-12 animate-in slide-in-from-top-2"
+            >
+              <label class="flex items-center gap-3 cursor-pointer select-none">
+                <div class="relative inline-flex items-center shrink-0">
+                  <input
+                    type="checkbox"
+                    v-model="formulario.activo"
+                    class="sr-only peer"
+                  />
+                  <div
+                    class="w-10 h-6 bg-slate-200 peer-checked:bg-principal rounded-full transition-colors peer-focus:ring-2 peer-focus:ring-principal-200"
+                  ></div>
+                  <span
+                    class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4 shadow-sm"
+                  ></span>
+                </div>
+                <div>
+                  <span class="block text-sm font-medium text-slate-700">
+                    Alumno activo
+                  </span>
+                  <span class="block text-xs text-slate-400">
+                    Solo los alumnos activos se incluyen en la facturación
+                    mensual masiva
+                  </span>
+                </div>
+              </label>
             </div>
 
             <!-- Dirección -->

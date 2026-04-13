@@ -33,6 +33,7 @@ class FacturaController extends Controller
             ->toArray();
 
         $clientesPendientes = Cliente::where('tipo', 'alumno')
+            ->where('activo', true)
             ->whereNotIn('id', $yaFacturados)
             ->get();
 

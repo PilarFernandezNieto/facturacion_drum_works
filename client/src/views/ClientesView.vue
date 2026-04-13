@@ -94,9 +94,10 @@ async function eliminarCliente(id) {
       <div
         class="hidden md:grid md:grid-cols-12 md:gap-2 px-4 py-3 bg-slate-50 border-b border-slate-100 text-sm font-semibold text-slate-700"
       >
-        <div class="col-span-4">Nombre / Cliente</div>
+        <div class="col-span-3">Nombre / Cliente</div>
         <div class="col-span-2">Tipo</div>
         <div class="col-span-2">Info / Curso</div>
+        <div class="col-span-1 text-center">Activo</div>
         <div class="col-span-2 text-center">Cuota/Base</div>
         <div class="col-span-2 text-right">Acciones</div>
       </div>
