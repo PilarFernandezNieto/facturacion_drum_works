@@ -9,7 +9,10 @@ Route::get('/preview-factura', function () {
     $cliente = (object)[
         'nombre'    => 'Álvaro Bárcena Suárez',
         'nif_cif'   => '09413027R',
-        'direccion' => "C/José Menéndez Carreño\n\"Cuchichi\" 8, 4ºE. 33011, OVIEDO",
+        'direccion' => "C/José Menéndez Carreño \"Cuchichi\" 8, 4ºE",
+        'codigo_postal' => '33011',
+        'localidad' => 'Oviedo',
+        'provincia' => 'Asturias'
     ];
 
     $factura = (object)[
