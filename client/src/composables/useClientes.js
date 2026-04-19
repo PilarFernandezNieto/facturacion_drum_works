@@ -7,7 +7,7 @@ const QUERY_KEY = ["clientes"];
 export function useClientes() {
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEY,
-    queryFn: () => api.get("clientes").then((r) => r.data),
+    queryFn: () => api.get("clientes").then((r) => r.data.data),
     staleTime: 1000 * 60 * 5, // 5 minutos
   });
 

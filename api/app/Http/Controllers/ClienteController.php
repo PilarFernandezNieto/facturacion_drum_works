@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\Cliente;
 use Illuminate\Http\Request;
 
@@ -19,7 +20,7 @@ class ClienteController extends Controller
             $query->where('tipo', $request->tipo);
         }
 
-        return response()->json($query->get());
+        return response()->json($query->paginate(10));
     }
 
     /**

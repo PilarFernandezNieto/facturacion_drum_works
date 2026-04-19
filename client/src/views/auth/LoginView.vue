@@ -22,7 +22,11 @@ const route = useRoute();
 
 watchEffect(() => {
   if (route.query.reset && route.query.reset?.length > 0) {
-    status.value = atob(route.query?.reset);
+    try {
+      status.value = atob(route.query.reset);
+    } catch {
+      status.value = null;
+    }
   } else {
     status.value = null;
   }

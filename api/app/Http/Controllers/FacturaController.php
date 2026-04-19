@@ -90,10 +90,10 @@ class FacturaController extends Controller
         $datos = $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
             'serie' => 'required|in:C,B',
-            'subtotal' => 'required|numeric',
-            'iva_porcentaje' => 'required|numeric',
-            'irpf_porcentaje' => 'required|numeric',
-            'concepto' => 'required|string',
+            'subtotal' => 'required|numeric|min:0|max:999999.99',
+            'iva_porcentaje' => 'required|numeric|min:0|max:100',
+            'irpf_porcentaje' => 'required|numeric|min:0|max:100',
+            'concepto' => 'required|string|max:500',
             'fecha_evento' => 'nullable|date',
             'fecha_emision' => 'required|date',
         ]);

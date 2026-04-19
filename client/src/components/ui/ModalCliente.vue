@@ -81,10 +81,13 @@ async function guardar() {
     }
     emit("close");
   } catch (error) {
-    notifyError(
-      "Error al guardar",
-      error.response?.data?.error || "Revisa los campos",
-    );
+    const status = error.response?.status;
+    const msg =
+      status === 422 ? "Revisa los campos del formulario" :
+      status === 409 ? "Este cliente ya existe" :
+      status >= 500 ? "Error del servidor. Intenta más tarde" :
+      "No se pudo guardar el cliente";
+    notifyError("Error al guardar", msg);
   }
 }
 

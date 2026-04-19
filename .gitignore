@@ -1,6 +1,7 @@
 # Archivos temporales de sistema
 .DS_Store
 Thumbs.db
+Claude.md
 
 # Directorios de dependencias (por si acaso, aunque ya están en sus subcarpetas)
 node_modules/
