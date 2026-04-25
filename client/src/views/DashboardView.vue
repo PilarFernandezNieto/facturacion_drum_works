@@ -7,7 +7,9 @@ import TarjetaDashboard from "@/components/ui/TarjetaDashboard.vue";
 const { alumnos } = useClientes();
 const { facturas } = useFacturas();
 
-const totalAlumnos = computed(() => alumnos.value.length);
+const alumnosActivos = computed(
+  () => (alumnos.value ?? []).filter((a) => a.activo).length,
+);
 
 const ahora = new Date();
 const mesActual = ahora.getMonth();
@@ -36,7 +38,7 @@ const facturasPendientes = computed(() => {
   <div>
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
       <!-- Tarjeta Alumnos -->
-      <TarjetaDashboard label="Alumnos" :value="totalAlumnos">
+      <TarjetaDashboard label="Alumnos activos" :value="alumnosActivos">
         <template #icon>
           <svg
             width="30px"
