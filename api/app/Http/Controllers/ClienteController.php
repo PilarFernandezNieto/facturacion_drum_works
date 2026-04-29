@@ -20,7 +20,7 @@ class ClienteController extends Controller
             $query->where('tipo', $request->tipo);
         }
 
-        return response()->json($query->paginate(10));
+        return response()->json(['data' => $query->get()]);
     }
 
     /**
