@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Gestión de Facturas
     Route::get('facturas', [FacturaController::class, 'index']);
+    Route::get('facturas/historial', [FacturaController::class, 'historial']);
     Route::post('facturas', [FacturaController::class, 'store']);
     Route::post('facturas/generar-masiva', [FacturaController::class, 'generarMasiva']);
     Route::put('facturas/{factura}/estado', [FacturaController::class, 'actualizarEstado']);

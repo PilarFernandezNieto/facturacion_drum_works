@@ -50,7 +50,10 @@ export function useCambiarEstado() {
     onError: (_err, _vars, ctx) => {
       if (ctx?.prev) queryClient.setQueryData(QUERY_KEY, ctx.prev);
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["historial"] });
+    },
   });
 }
 

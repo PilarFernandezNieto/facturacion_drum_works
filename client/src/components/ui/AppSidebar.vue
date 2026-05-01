@@ -83,6 +83,15 @@ const facturasAbierto = ref(
         </div>
       </div>
 
+      <!-- Historial -->
+      <AppNavLink
+        :to="{ name: 'historial' }"
+        active-class="bg-principal !text-white shadow-sm shadow-principal-50"
+        @click="$emit('close')"
+      >
+        Historial
+      </AppNavLink>
+
       <!-- Dropdown Facturas -->
       <div>
         <button

@@ -144,6 +144,25 @@ class FacturaController extends Controller
         return response()->json(['mensaje' => 'Factura eliminada.']);
     }
 
+    public function historial()
+    {
+        $filas = Factura::selectRaw("
+            DATE_FORMAT(fecha_emision, '%Y-%m') as mes,
+            COUNT(DISTINCT CASE WHEN serie = 'C' THEN cliente_id END) as alumnos,
+            SUM(CASE WHEN serie = 'C' THEN 1 ELSE 0 END) as facturas_clases,
+            SUM(CASE WHEN serie = 'C' THEN monto ELSE 0 END) as total_clases,
+            SUM(CASE WHEN serie = 'B' THEN 1 ELSE 0 END) as bolos,
+            SUM(CASE WHEN serie = 'B' THEN monto ELSE 0 END) as total_bolos,
+            SUM(monto) as total_facturado,
+            SUM(CASE WHEN estado = 'pagada' THEN monto ELSE 0 END) as total_cobrado
+        ")
+            ->groupByRaw("DATE_FORMAT(fecha_emision, '%Y-%m')")
+            ->orderByRaw("mes DESC")
+            ->get();
+
+        return response()->json($filas);
+    }
+
     public function exportarPdf(Factura $factura)
     {
         $factura->load('cliente');
