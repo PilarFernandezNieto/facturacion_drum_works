@@ -14,6 +14,7 @@ const formulario = reactive({
   subtotal: 0,
   iva_porcentaje: 10,
   irpf_porcentaje: 15,
+  aplicar_irpf: true,
   concepto: "",
   fecha_evento: "",
   fecha_emision: new Date().toISOString().split("T")[0],
@@ -22,7 +23,7 @@ const formulario = reactive({
 const totalBolo = computed(() => {
   const base = parseFloat(formulario.subtotal) || 0;
   const iva = (base * formulario.iva_porcentaje) / 100;
-  const irpf = (base * formulario.irpf_porcentaje) / 100;
+  const irpf = formulario.aplicar_irpf ? (base * formulario.irpf_porcentaje) / 100 : 0;
   return (base + iva - irpf).toFixed(2);
 });
 
@@ -33,6 +34,7 @@ const clientesBolo = computed(() =>
 function limpiarFormulario() {
   formulario.cliente_id = "";
   formulario.subtotal = 0;
+  formulario.aplicar_irpf = true;
   formulario.concepto = "";
   formulario.fecha_evento = "";
   formulario.fecha_emision = new Date().toISOString().split("T")[0];
@@ -40,7 +42,10 @@ function limpiarFormulario() {
 
 async function guardar() {
   try {
-    await guardarBolo(formulario);
+    await guardarBolo({
+      ...formulario,
+      irpf_porcentaje: formulario.aplicar_irpf ? formulario.irpf_porcentaje : 0,
+    });
     limpiarFormulario();
     emit("close");
     toast("Factura B generada con éxito");
@@ -171,10 +176,19 @@ function cerrar() {
                 Cálculo Fiscal
               </label>
               <div
-                class="text-xs text-slate-500 bg-slate-50 p-2 rounded border border-slate-100 h-10 flex items-center"
+                class="text-xs text-slate-500 bg-slate-50 p-2 rounded border border-slate-100 h-10 flex items-center gap-3"
               >
-                IVA: {{ formulario.iva_porcentaje }}% | IRPF:
-                {{ formulario.irpf_porcentaje }}%
+                <span>IVA: {{ formulario.iva_porcentaje }}%</span>
+                <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                  <input
+                    v-model="formulario.aplicar_irpf"
+                    type="checkbox"
+                    class="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span :class="formulario.aplicar_irpf ? '' : 'text-slate-400 line-through'">
+                    IRPF: {{ formulario.irpf_porcentaje }}%
+                  </span>
+                </label>
               </div>
             </div>
           </div>
