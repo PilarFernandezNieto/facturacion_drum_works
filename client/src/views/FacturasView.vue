@@ -57,14 +57,16 @@ const mesesDisponibles = computed(() => {
 });
 
 const facturasFiltradas = computed(() => {
-  return (facturas.value ?? []).filter((f) => {
-    if (f.serie !== serie.value) return false;
-    const matchEstado = !filtroEstado.value || f.estado === filtroEstado.value;
-    const d = new Date(f.fecha_emision);
-    const mesAnio = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const matchMes = !filtroMes.value || mesAnio === filtroMes.value;
-    return matchEstado && matchMes;
-  });
+  return (facturas.value ?? [])
+    .filter((f) => {
+      if (f.serie !== serie.value) return false;
+      const matchEstado = !filtroEstado.value || f.estado === filtroEstado.value;
+      const d = new Date(f.fecha_emision);
+      const mesAnio = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const matchMes = !filtroMes.value || mesAnio === filtroMes.value;
+      return matchEstado && matchMes;
+    })
+    .sort((a, b) => b.numero - a.numero);
 });
 
 const { paginado, pagina, totalPaginas, paginas, desde, hasta, total, irA } =
