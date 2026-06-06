@@ -2,12 +2,14 @@
 import { ref } from "vue";
 import { RouterView, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { VueQueryDevtools } from "@tanstack/vue-query-devtools";
 import AppSidebar from "./components/ui/AppSidebar.vue";
 import AppHeader from "./components/ui/AppHeader.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();
 const sidebarOpen = ref(false);
+const isDev = import.meta.env.DEV;
 
 const handleLogout = () => {
   authStore.logout();
@@ -39,6 +41,8 @@ const handleLogout = () => {
       </Suspense>
     </main>
   </div>
+
+  <VueQueryDevtools v-if="isDev" />
 </template>
 
 <style>

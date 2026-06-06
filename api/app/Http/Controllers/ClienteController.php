@@ -5,9 +5,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use Illuminate\Http\Request;
-
+// use Illuminate\Support\Facades\Log;
+//         Log::debug('SQL', [
+//             'sql'      => $query->toSql(),
+//             'bindings' => $query->getBindings(),
+//         ]);
 class ClienteController extends Controller
 {
+
     /**
      * Listar todos los clientes.
      */
@@ -19,6 +24,10 @@ class ClienteController extends Controller
             $request->validate(['tipo' => 'in:alumno,bolo']);
             $query->where('tipo', $request->tipo);
         }
+
+        $query->orderByRaw("CASE WHEN tipo = 'alumno' THEN activo END DESC")
+              ->orderBy('nombre');
+
 
         return response()->json(['data' => $query->get()]);
     }
