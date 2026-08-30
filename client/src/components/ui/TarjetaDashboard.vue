@@ -2,6 +2,10 @@
 defineProps({
   label: String,
   value: [String, Number],
+  to: {
+    type: [String, Object],
+    default: null,
+  },
   valueClass: {
     type: String,
     default: "text-slate-800",
@@ -14,8 +18,11 @@ defineProps({
 </script>
 
 <template>
-  <div
+  <component
+    :is="to ? 'router-link' : 'div'"
+    :to="to ?? undefined"
     class="bg-white p-6 rounded-2xl shadow-sm border border-principal-100 flex flex-col justify-between"
+    :class="{ 'hover:shadow-md hover:border-principal-200 transition': to }"
   >
     <span class="text-slate-400 text-sm font-semibold uppercase tracking-wider">
       {{ label }}
@@ -26,5 +33,5 @@ defineProps({
         <slot name="icon" />
       </div>
     </div>
-  </div>
+  </component>
 </template>

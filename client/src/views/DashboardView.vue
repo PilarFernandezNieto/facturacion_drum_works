@@ -38,7 +38,11 @@ const facturasPendientes = computed(() => {
   <div>
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
       <!-- Tarjeta Alumnos -->
-      <TarjetaDashboard label="Alumnos activos" :value="alumnosActivos">
+      <TarjetaDashboard
+        label="Alumnos activos"
+        :value="alumnosActivos"
+        :to="{ name: 'alumnos' }"
+      >
         <template #icon>
           <svg
             width="30px"
@@ -113,7 +117,11 @@ const facturasPendientes = computed(() => {
       </TarjetaDashboard>
 
       <!-- Tarjeta Pendientes -->
-      <TarjetaDashboard label="Facturas Pendientes" :value="facturasPendientes">
+      <TarjetaDashboard
+        label="Facturas Pendientes"
+        :value="facturasPendientes"
+        :to="{ name: 'facturas-bolos' }"
+      >
         <template #icon>
           <svg
             fill="#ccc4d5"
