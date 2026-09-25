@@ -22,10 +22,21 @@ class Factura extends Model
         'concepto',
         'fecha_evento',
         'estado',
-        'fecha_emision'
+        'fecha_emision',
+        'borrado'
     ];
 
     protected $appends = ['codigo'];
+
+    /**
+     * Excluye por defecto las facturas marcadas como borradas (soft delete).
+     */
+    protected static function booted()
+    {
+        static::addGlobalScope('noBorradas', function ($builder) {
+            $builder->where('borrado', false);
+        });
+    }
 
     public function cliente()
     {

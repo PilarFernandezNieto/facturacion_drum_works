@@ -99,12 +99,12 @@ class FacturaController extends Controller
         ]);
 
         $anio = Carbon::parse($datos['fecha_emision'])->year;
-        
+
         // Numeración correlativa
         $ultimoNumero = Factura::where('serie', $datos['serie'])
             ->whereYear('fecha_emision', $anio)
             ->max('numero') ?? 0;
-        
+
         $ivaMonto = ($datos['subtotal'] * $datos['iva_porcentaje']) / 100;
         $irpfMonto = ($datos['subtotal'] * $datos['irpf_porcentaje']) / 100;
         $total = $datos['subtotal'] + $ivaMonto - $irpfMonto;
@@ -137,12 +137,12 @@ class FacturaController extends Controller
         $factura->update(['estado' => $request->estado]);
         return response()->json(['mensaje' => 'Estado actualizado.', 'factura' => $factura]);
     }
-
     public function destroy(Factura $factura)
     {
-        $factura->delete();
+        $factura->update(['borrado' => true]);
         return response()->json(['mensaje' => 'Factura eliminada.']);
     }
+
 
     public function historial()
     {
@@ -166,7 +166,7 @@ class FacturaController extends Controller
     public function exportarPdf(Factura $factura)
     {
         $factura->load('cliente');
-        
+
         $datos = [
             'fecha' => Carbon::parse($factura->fecha_emision)->format('d/m/Y'),
             'factura' => $factura,
@@ -176,10 +176,10 @@ class FacturaController extends Controller
         ];
 
         $pdf = Pdf::loadView('pdf.factura', $datos);
-        
+
         // Nombre del archivo basado en el código
         $nombreArchivo = "FRA " . str_replace('/', '-', $factura->codigo) . ".pdf";
-        
+
         return $pdf->download($nombreArchivo);
     }
 }

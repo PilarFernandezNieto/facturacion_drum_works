@@ -26,6 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('facturas', [FacturaController::class, 'store']);
     Route::post('facturas/generar-masiva', [FacturaController::class, 'generarMasiva']);
     Route::put('facturas/{factura}/estado', [FacturaController::class, 'actualizarEstado']);
+
     Route::delete('facturas/{factura}', [FacturaController::class, 'destroy']);
     Route::get('facturas/{factura}/pdf', [FacturaController::class, 'exportarPdf']);
 });

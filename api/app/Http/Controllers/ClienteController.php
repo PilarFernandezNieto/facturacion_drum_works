@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 
 use App\Models\Cliente;
+use App\Models\Factura;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 // use Illuminate\Support\Facades\Log;
 //         Log::debug('SQL', [
 //             'sql'      => $query->toSql(),
@@ -105,6 +107,16 @@ class ClienteController extends Controller
      */
     public function destroy(Cliente $cliente)
     {
+        $tieneFacturas = Factura::withoutGlobalScope('noBorradas')
+            ->where('cliente_id', $cliente->id)
+            ->exists();
+
+        if ($tieneFacturas) {
+            throw ValidationException::withMessages([
+                'cliente' => 'No se puede eliminar: este cliente tiene facturas asociadas. Márcalo como inactivo en su lugar.',
+            ]);
+        }
+
         $cliente->delete();
 
         return response()->json([
