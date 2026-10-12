@@ -10,6 +10,7 @@ vendor/
 # Archivos de entorno y logs
 .env
 *.log
+backup_*.sql
 
 # Muestras de PDF que no deben ir en el repo
 *.pdf
