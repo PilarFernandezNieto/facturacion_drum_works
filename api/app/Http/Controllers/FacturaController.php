@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Factura;
 use App\Models\Cliente;
+use App\Services\NumeracionFactura;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class FacturaController extends Controller
 {
@@ -85,7 +87,7 @@ class FacturaController extends Controller
     /**
      * Generación manual (principalmente para Serie B - Bolos)
      */
-    public function store(Request $request)
+    public function store(Request $request, NumeracionFactura $numeracion)
     {
         $datos = $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
@@ -100,30 +102,36 @@ class FacturaController extends Controller
 
         $anio = Carbon::parse($datos['fecha_emision'])->year;
 
-        // Numeración correlativa
-        $ultimoNumero = Factura::where('serie', $datos['serie'])
-            ->whereYear('fecha_emision', $anio)
-            ->max('numero') ?? 0;
 
         $ivaMonto = ($datos['subtotal'] * $datos['iva_porcentaje']) / 100;
         $irpfMonto = ($datos['subtotal'] * $datos['irpf_porcentaje']) / 100;
         $total = $datos['subtotal'] + $ivaMonto - $irpfMonto;
 
-        $factura = Factura::create([
-            'cliente_id' => $datos['cliente_id'],
-            'serie' => $datos['serie'],
-            'numero' => $ultimoNumero + 1,
-            'subtotal' => $datos['subtotal'],
-            'iva_porcentaje' => $datos['iva_porcentaje'],
-            'iva_monto' => $ivaMonto,
-            'irpf_porcentaje' => $datos['irpf_porcentaje'],
-            'irpf_monto' => $irpfMonto,
-            'monto' => $total,
-            'concepto' => $datos['concepto'],
-            'fecha_evento' => $datos['fecha_evento'],
-            'fecha_emision' => $datos['fecha_emision'],
-            'estado' => 'pendiente',
-        ]);
+        // Número y factura se crean juntos: si algo falla, el número no se consume.
+
+        $factura = DB::transaction(function () use ($datos, $anio, $ivaMonto, $irpfMonto, $total, $numeracion) {
+            $numero = $numeracion->siguiente($datos['serie'], $anio);
+
+
+            $factura = Factura::create([
+                'cliente_id' => $datos['cliente_id'],
+                'serie' => $datos['serie'],
+                'numero' => $numero,
+                'subtotal' => $datos['subtotal'],
+                'iva_porcentaje' => $datos['iva_porcentaje'],
+                'iva_monto' => $ivaMonto,
+                'irpf_porcentaje' => $datos['irpf_porcentaje'],
+                'irpf_monto' => $irpfMonto,
+                'monto' => $total,
+                'concepto' => $datos['concepto'],
+                'fecha_evento' => $datos['fecha_evento'] ?? null,
+                'fecha_emision' => $datos['fecha_emision'],
+                'estado' => 'pendiente',
+            ]);
+            return $factura;
+        });
+
+
 
         return response()->json([
             'mensaje' => 'Factura generada correctamente',
