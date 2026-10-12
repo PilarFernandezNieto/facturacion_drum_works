@@ -21,48 +21,33 @@ class FacturaController extends Controller
     /**
      * Generación masiva de la serie C (Alumnos/Clases)
      */
-    public function generarMasiva(Request $request)
+    public function generarMasiva(NumeracionFactura $numeracion)
     {
         $fechaActual = Carbon::now();
         $anio = $fechaActual->year;
         $mes = $fechaActual->month;
 
-        // 1 query: IDs de alumnos que ya tienen factura C este mes
-        $yaFacturados = Factura::where('serie', 'C')
-            ->whereYear('fecha_emision', $anio)
-            ->whereMonth('fecha_emision', $mes)
-            ->pluck('cliente_id')
-            ->toArray();
-
-        $clientesPendientes = Cliente::where('tipo', 'alumno')
-            ->where('activo', true)
-            ->whereNotIn('id', $yaFacturados)
-            ->get();
-
-        if ($clientesPendientes->isEmpty()) {
-            return response()->json([
-                'mensaje' => 'Todos los alumnos ya tienen factura para este mes.',
-                'total_generadas' => 0,
-            ]);
-        }
-
-        // Último número de Serie C del año actual (1 query, antes del loop)
-        $ultimoNumero = Factura::where('serie', 'C')
-            ->whereYear('fecha_emision', $anio)
-            ->max('numero') ?? 0;
 
         $concepto = 'Clases batería ' . strtoupper($fechaActual->translatedFormat('F'));
         $fechaEmision = $fechaActual->toDateString();
-        $conteo = 0;
 
-        DB::transaction(function () use ($clientesPendientes, &$ultimoNumero, &$conteo, $concepto, $fechaEmision) {
+        $conteo = DB::transaction(function () use ($anio, $mes, $concepto, $fechaEmision, $numeracion) {
+            // IDs de alumnos que ya tienen factura C este mes
+            $yaFacturados = Factura::where('serie', 'C')
+                ->whereYear('fecha_emision', $anio)
+                ->whereMonth('fecha_emision', $mes)
+                ->pluck('cliente_id')
+                ->toArray();
+            $clientesPendientes = Cliente::where('tipo', 'alumno')
+                ->where('activo', true)
+                ->whereNotIn('id', $yaFacturados)
+                ->get();
+            $conteo = 0;
             foreach ($clientesPendientes as $cliente) {
-                $ultimoNumero++;
-
                 Factura::create([
                     'cliente_id'      => $cliente->id,
                     'serie'           => 'C',
-                    'numero'          => $ultimoNumero,
+                    'numero'          => $numeracion->siguiente('C', $anio),
                     'subtotal'        => $cliente->cuota_mensual,
                     'iva_porcentaje'  => 0,
                     'iva_monto'       => 0,
@@ -76,7 +61,15 @@ class FacturaController extends Controller
 
                 $conteo++;
             }
+            return $conteo;
         });
+
+        if ($conteo === 0) {
+            return response()->json([
+                'mensaje' => 'Todos los alumnos ya tienen factura para este mes',
+                'total_generadas' => 0
+            ]);
+        }
 
         return response()->json([
             'mensaje' => "Se han generado $conteo facturas nuevas para la serie C.",
