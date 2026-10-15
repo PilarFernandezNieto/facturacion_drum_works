@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Factura;
 use App\Models\Cliente;
+use App\Models\Factura;
+use App\Services\EmisionFactura;
 use App\Services\NumeracionFactura;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 
 class FacturaController extends Controller
@@ -164,23 +165,11 @@ class FacturaController extends Controller
         return response()->json($filas);
     }
 
-    public function exportarPdf(Factura $factura)
+    public function exportarPdf(Request $request, Factura $factura, EmisionFactura $emision)
     {
-        $factura->load('cliente');
+        $factura = $emision->asegurarPdf($factura, $request->user()?->id);
 
-        $datos = [
-            'fecha' => Carbon::parse($factura->fecha_emision)->format('d/m/Y'),
-            'factura' => $factura,
-            'cliente' => $factura->cliente,
-            // Agregamos el código formateado para la vista
-            'codigo_factura' => $factura->codigo
-        ];
-
-        $pdf = Pdf::loadView('pdf.factura', $datos);
-
-        // Nombre del archivo basado en el código
-        $nombreArchivo = "FRA " . str_replace('/', '-', $factura->codigo) . ".pdf";
-
-        return $pdf->download($nombreArchivo);
+        $nombreArchivo = 'FRA ' . str_replace('/', '-', $factura->codigo) . '.pdf';
+        return Storage::disk('local')->download($factura->pdf_path, $nombreArchivo);
     }
 }
