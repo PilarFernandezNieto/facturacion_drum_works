@@ -60,13 +60,20 @@ const facturasFiltradas = computed(() => {
   return (facturas.value ?? [])
     .filter((f) => {
       if (f.serie !== serie.value) return false;
-      const matchEstado = !filtroEstado.value || f.estado === filtroEstado.value;
+      const matchEstado =
+        !filtroEstado.value || f.estado === filtroEstado.value;
       const d = new Date(f.fecha_emision);
       const mesAnio = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       const matchMes = !filtroMes.value || mesAnio === filtroMes.value;
       return matchEstado && matchMes;
     })
-    .sort((a, b) => b.numero - a.numero);
+    .sort((a, b) => {
+      // Borradores primero (más reciente arriba), después, las emitidas por número
+      if (a.numero == null && b.numero == null) return b.id - a.id;
+      if (a.numero == null) return -1;
+      if (b.numero == null) return -1;
+      return b.numero - a.numero;
+    });
 });
 
 const { paginado, pagina, totalPaginas, paginas, desde, hasta, total, irA } =

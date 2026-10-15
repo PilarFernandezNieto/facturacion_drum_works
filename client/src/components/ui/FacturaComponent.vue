@@ -29,7 +29,12 @@ function formatearFecha(fecha) {
   >
     <!-- Código · col-span-2 -->
     <div class="md:col-span-2">
-      <span class="font-mono font-bold text-slate-900 text-sm">{{
+      <span
+        v-if="factura.situacion === 'borrador'"
+        class="inline-block px-2 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500"
+        >BORRADOR
+      </span>
+      <span v-else class="font-mono font-bold text-slate-900 text-sm">{{
         factura.codigo
       }}</span>
     </div>
@@ -85,7 +90,13 @@ function formatearFecha(fecha) {
         :disabled="descargando"
         class="text-purple-600 hover:bg-purple-100 px-2 py-1 rounded border border-purple-600/20 text-xs font-bold transition disabled:opacity-50"
       >
-        {{ descargando ? "..." : "PDF" }}
+        {{
+          descargando
+            ? "..."
+            : factura.situacio === "borrador"
+              ? "Emitir PDF"
+              : "PDF"
+        }}
       </button>
       <button
         @click="emit('eliminar', factura.id)"

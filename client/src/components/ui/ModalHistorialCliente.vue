@@ -136,7 +136,12 @@ async function descargarTodo() {
           class="border-b border-slate-100 hover:bg-slate-50/50 transition px-5 py-3 flex flex-col gap-1 md:grid md:grid-cols-12 md:items-center"
         >
           <div class="md:col-span-2">
-            <span class="font-mono font-bold text-slate-800 text-sm">{{
+            <span
+              v-if="f.situacion === 'borrador'"
+              class="inline-block px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500"
+              >BORRADOR</span
+            >
+            <span v-else class="font-mono font-bold text-slate-800 text-sm">{{
               f.codigo
             }}</span>
           </div>
@@ -167,7 +172,7 @@ async function descargarTodo() {
               :disabled="descargandoUno"
               class="text-purple-600 hover:bg-purple-100 px-2 py-1 rounded border border-purple-600/20 text-xs font-bold transition disabled:opacity-50"
             >
-              PDF
+              {{ f.situacion === "borrador" ? "Emitir PDF" : "PDF" }}
             </button>
           </div>
         </div>
