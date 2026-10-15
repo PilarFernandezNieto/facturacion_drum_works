@@ -4,6 +4,12 @@ import api from "@/api/axios";
 
 const QUERY_KEY = ["facturas"];
 
+function nombreDesdeCabecera(respuesta, porDefecto) {
+  const cabecera = respuesta.headers["content-disposition"] ?? "";
+  const coincidencia = cabecera.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+  return coincidencia ? decodeURIComponent(coincidencia[1]) : porDefecto;
+}
+
 export function useFacturas() {
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEY,
@@ -66,10 +72,12 @@ export function useEliminarFactura() {
 }
 
 export function useDescargarPDF() {
+  const queryClient = useQueryClient();
   const descargando = ref(false);
 
-  async function descargarPDF(id, codigo) {
+  async function descargarPDF(id) {
     descargando.value = true;
+
     try {
       const respuesta = await api.get(`facturas/${id}/pdf`, {
         responseType: "blob",
@@ -77,11 +85,13 @@ export function useDescargarPDF() {
       const url = window.URL.createObjectURL(respuesta.data);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `FRA ${codigo.replace("/", "-")}.pdf`;
+      link.download = nombreDesdeCabecera(respuesta, `factura-${id}.pdf`);
       link.click();
       window.URL.revokeObjectURL(url);
     } finally {
       descargando.value = false;
+
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     }
   }
 
@@ -89,6 +99,7 @@ export function useDescargarPDF() {
 }
 
 export function useDescargarPDFMasivo() {
+  const queryClient = useQueryClient();
   const descargando = ref(false);
 
   async function descargarMasivo(facturas, nombreZip = "facturas.zip") {
@@ -98,14 +109,15 @@ export function useDescargarPDFMasivo() {
       const { default: JSZip } = await import("jszip");
       const zip = new JSZip();
 
-      await Promise.all(
-        facturas.map(async (f) => {
-          const resp = await api.get(`facturas/${f.id}/pdf`, {
-            responseType: "blob",
-          });
-          zip.file(`FRA ${f.codigo.replace("/", "-")}.pdf`, resp.data);
-        }),
-      );
+      // En orden y de una en una: cada petición puede emitir una factura y
+      // la numeración debe seguir el orden de la lista
+
+      for (const f of facturas) {
+        const resp = await api.get(`facturas/${f.id}/pdf`, {
+          responseType: "blob",
+        });
+        zip.file(nombreDesdeCabecera(resp, `factura-${f.id}.pdf`), resp.data);
+      }
 
       const blob = await zip.generateAsync({ type: "blob" });
       const url = window.URL.createObjectURL(blob);
@@ -116,6 +128,7 @@ export function useDescargarPDFMasivo() {
       window.URL.revokeObjectURL(url);
     } finally {
       descargando.value = false;
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     }
   }
 
