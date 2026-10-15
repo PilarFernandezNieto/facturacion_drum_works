@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use App\Models\Factura;
+use App\Models\FacturaEvento;
 use App\Services\EmisionFactura;
-use App\Services\NumeracionFactura;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +22,7 @@ class FacturaController extends Controller
     /**
      * Generación masiva de la serie C (Alumnos/Clases)
      */
-    public function generarMasiva(NumeracionFactura $numeracion)
+    public function generarMasiva(Request $request)
     {
         $fechaActual = Carbon::now();
         $anio = $fechaActual->year;
@@ -31,24 +31,30 @@ class FacturaController extends Controller
 
         $concepto = 'Clases batería ' . strtoupper($fechaActual->translatedFormat('F'));
         $fechaEmision = $fechaActual->toDateString();
+        $userId = $request->user()?->id;
 
-        $conteo = DB::transaction(function () use ($anio, $mes, $concepto, $fechaEmision, $numeracion) {
-            // IDs de alumnos que ya tienen factura C este mes
+
+
+        $conteo = DB::transaction(function () use ($anio, $mes, $concepto, $fechaEmision, $userId) {
+            // Alumnos que ya tienen factura C este mes (borrador o emitida)
+
             $yaFacturados = Factura::where('serie', 'C')
                 ->whereYear('fecha_emision', $anio)
                 ->whereMonth('fecha_emision', $mes)
                 ->pluck('cliente_id')
                 ->toArray();
+
             $clientesPendientes = Cliente::where('tipo', 'alumno')
                 ->where('activo', true)
                 ->whereNotIn('id', $yaFacturados)
                 ->get();
-            $conteo = 0;
+
+
             foreach ($clientesPendientes as $cliente) {
-                Factura::create([
+                $factura = Factura::create([
                     'cliente_id'      => $cliente->id,
                     'serie'           => 'C',
-                    'numero'          => $numeracion->siguiente('C', $anio),
+                    'situacion' => Factura::SITUACION_BORRADOR,
                     'subtotal'        => $cliente->cuota_mensual,
                     'iva_porcentaje'  => 0,
                     'iva_monto'       => 0,
@@ -59,10 +65,13 @@ class FacturaController extends Controller
                     'estado'          => 'pendiente',
                     'fecha_emision'   => $fechaEmision,
                 ]);
-
-                $conteo++;
+                FacturaEvento::create([
+                    'factura_id' => $factura->id,
+                    'user_id' => $userId,
+                    'tipo' => 'borrador_creado'
+                ]);
             }
-            return $conteo;
+            return $clientesPendientes->count();
         });
 
         if ($conteo === 0) {
@@ -73,7 +82,7 @@ class FacturaController extends Controller
         }
 
         return response()->json([
-            'mensaje' => "Se han generado $conteo facturas nuevas para la serie C.",
+            'mensaje' => "Se han generado $conteo borradores nuevos para la serie C.",
             'total_generadas' => $conteo,
         ]);
     }
@@ -81,7 +90,7 @@ class FacturaController extends Controller
     /**
      * Generación manual (principalmente para Serie B - Bolos)
      */
-    public function store(Request $request, NumeracionFactura $numeracion)
+    public function store(Request $request)
     {
         $datos = $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
@@ -94,23 +103,16 @@ class FacturaController extends Controller
             'fecha_emision' => 'required|date',
         ]);
 
-        $anio = Carbon::parse($datos['fecha_emision'])->year;
-
 
         $ivaMonto = ($datos['subtotal'] * $datos['iva_porcentaje']) / 100;
         $irpfMonto = ($datos['subtotal'] * $datos['irpf_porcentaje']) / 100;
         $total = $datos['subtotal'] + $ivaMonto - $irpfMonto;
 
-        // Número y factura se crean juntos: si algo falla, el número no se consume.
-
-        $factura = DB::transaction(function () use ($datos, $anio, $ivaMonto, $irpfMonto, $total, $numeracion) {
-            $numero = $numeracion->siguiente($datos['serie'], $anio);
-
-
+        $factura = DB::transaction(function () use ($request, $datos, $ivaMonto, $irpfMonto, $total) {
             $factura = Factura::create([
                 'cliente_id' => $datos['cliente_id'],
                 'serie' => $datos['serie'],
-                'numero' => $numero,
+                'situacion' => Factura::SITUACION_BORRADOR,
                 'subtotal' => $datos['subtotal'],
                 'iva_porcentaje' => $datos['iva_porcentaje'],
                 'iva_monto' => $ivaMonto,
@@ -122,13 +124,17 @@ class FacturaController extends Controller
                 'fecha_emision' => $datos['fecha_emision'],
                 'estado' => 'pendiente',
             ]);
+
+            FacturaEvento::create([
+                'factura_id' => $factura->id,
+                'user_id' => $request->user()?->id,
+                'tipo' => 'borrador_creado'
+            ]);
             return $factura;
         });
 
-
-
         return response()->json([
-            'mensaje' => 'Factura generada correctamente',
+            'mensaje' => 'Borrador de factura creado correctamente',
             'factura' => $factura
         ], 201);
     }
@@ -148,7 +154,7 @@ class FacturaController extends Controller
 
     public function historial()
     {
-        $filas = Factura::selectRaw("
+        $filas = Factura::where('situacion', '<>', Factura::SITUACION_BORRADOR)->selectRaw("
             DATE_FORMAT(fecha_emision, '%Y-%m') as mes,
             COUNT(DISTINCT CASE WHEN serie = 'C' THEN cliente_id END) as alumnos,
             SUM(CASE WHEN serie = 'C' THEN 1 ELSE 0 END) as facturas_clases,
