@@ -71,7 +71,7 @@ const facturasFiltradas = computed(() => {
       // Borradores primero (más reciente arriba), después, las emitidas por número
       if (a.numero == null && b.numero == null) return b.id - a.id;
       if (a.numero == null) return -1;
-      if (b.numero == null) return -1;
+      if (b.numero == null) return 1;
       return b.numero - a.numero;
     });
 });

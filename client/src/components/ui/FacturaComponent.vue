@@ -64,17 +64,18 @@ function formatearFecha(fecha) {
 
     <!-- Estado · col-span-1 -->
     <div class="md:col-span-1">
-      <span
+      <button
         @click="emit('toggle-estado', factura)"
+        :disabled="factura.situacion === 'borrador'"
         :class="
           factura.estado === 'pendiente'
             ? 'bg-amber-100 text-amber-700'
             : 'bg-emerald-100 text-emerald-700'
         "
-        class="inline-block px-2 py-1 rounded-full text-xs font-bold cursor-pointer hover:opacity-80 transition whitespace-nowrap"
+        class="inline-block px-2 py-1 rounded-full text-xs font-bold cursor-pointer disabled:cursor-not-allowed hover:opacity-80 transition whitespace-nowrap"
       >
         {{ factura.estado === "pendiente" ? "PDTE" : "PAGADA" }}
-      </span>
+      </button>
     </div>
 
     <!-- Acciones · col-span-1 -->
@@ -93,7 +94,7 @@ function formatearFecha(fecha) {
         {{
           descargando
             ? "..."
-            : factura.situacio === "borrador"
+            : factura.situacion === "borrador"
               ? "Emitir PDF"
               : "PDF"
         }}

@@ -142,6 +142,13 @@ class FacturaController extends Controller
     public function actualizarEstado(Request $request, Factura $factura)
     {
         $request->validate(['estado' => 'required|in:pendiente,pagada']);
+
+        if ($factura->situacion === Factura::SITUACION_BORRADOR) {
+            return response()->json(
+                ['mensaje' => 'Un borrador no puede marcarse como pagado. Emítelo primero descargando el PDF.'],
+                409
+            );
+        }
         $factura->update(['estado' => $request->estado]);
         return response()->json(['mensaje' => 'Estado actualizado.', 'factura' => $factura]);
     }
