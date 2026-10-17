@@ -168,7 +168,7 @@ async function descargarTodo() {
           </div>
           <div class="md:col-span-1 flex justify-end">
             <button
-              @click="descargarPDF(f.id, f.codigo)"
+              @click="descargarPDF(f)"
               :disabled="descargandoUno"
               class="text-purple-600 hover:bg-purple-100 px-2 py-1 rounded border border-purple-600/20 text-xs font-bold transition disabled:opacity-50"
             >

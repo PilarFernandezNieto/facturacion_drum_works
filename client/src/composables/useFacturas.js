@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import api from "@/api/axios";
+import { confirmDialog } from "@/utils/swal";
 
 const QUERY_KEY = ["facturas"];
 
@@ -75,7 +76,16 @@ export function useDescargarPDF() {
   const queryClient = useQueryClient();
   const descargando = ref(false);
 
-  async function descargarPDF(id) {
+  async function descargarPDF(factura) {
+    if (factura.situacion === "borrador") {
+      const resultado = await confirmDialog(
+        "Emitir factura",
+        "Al descargar la factura esta factura se emitirá. Esta acción no se puede deshacer. ¿Continuar?",
+        "warning",
+      );
+      if (!resultado.isConfirmed) return;
+    }
+    const id = factura.id;
     descargando.value = true;
 
     try {
@@ -104,15 +114,25 @@ export function useDescargarPDFMasivo() {
 
   async function descargarMasivo(facturas, nombreZip = "facturas.zip") {
     if (!facturas.length) return;
+    const borradores = facturas.filter((f) => f.situacion === "borrador");
+    if (borradores.length > 0) {
+      const resultado = await confirmDialog(
+        "Emitir facturas",
+        `Al descargar este archivo se van a emitir ${borradores.length} facturas. Esta acción no se puede deshacer. ¿Continuas?`,
+        "warning",
+      );
+      if (!resultado.isConfirmed) return;
+    }
+
     descargando.value = true;
     try {
       const { default: JSZip } = await import("jszip");
       const zip = new JSZip();
 
-      // En orden y de una en una: cada petición puede emitir una factura y
-      // la numeración debe seguir el orden de la lista
+      // Se emiten por orden de creación para que la numeración siga ese orden
 
-      for (const f of facturas) {
+      const ordenDeCreacion = [...facturas].sort((a, b) => a.id - b.id);
+      for (const f of ordenDeCreacion) {
         const resp = await api.get(`facturas/${f.id}/pdf`, {
           responseType: "blob",
         });

@@ -87,7 +87,7 @@ function formatearFecha(fecha) {
         PDF
       </a> -->
       <button
-        @click="descargarPDF(factura.id, factura.codigo)"
+        @click="descargarPDF(factura)"
         :disabled="descargando"
         class="text-purple-600 hover:bg-purple-100 px-2 py-1 rounded border border-purple-600/20 text-xs font-bold transition disabled:opacity-50"
       >

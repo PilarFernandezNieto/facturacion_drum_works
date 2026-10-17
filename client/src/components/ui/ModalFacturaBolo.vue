@@ -23,7 +23,9 @@ const formulario = reactive({
 const totalBolo = computed(() => {
   const base = parseFloat(formulario.subtotal) || 0;
   const iva = (base * formulario.iva_porcentaje) / 100;
-  const irpf = formulario.aplicar_irpf ? (base * formulario.irpf_porcentaje) / 100 : 0;
+  const irpf = formulario.aplicar_irpf
+    ? (base * formulario.irpf_porcentaje) / 100
+    : 0;
   return (base + iva - irpf).toFixed(2);
 });
 
@@ -119,7 +121,7 @@ function cerrar() {
             <!-- Concepto -->
             <div class="col-span-12">
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Concepto del Concierto
+                Concepto
               </label>
               <textarea
                 v-model="formulario.concepto"
@@ -133,7 +135,7 @@ function cerrar() {
             <!-- Fecha evento -->
             <div class="col-span-12 lg:col-span-6">
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Fecha del Concierto
+                Fecha
               </label>
               <input
                 v-model="formulario.fecha_evento"
@@ -179,13 +181,21 @@ function cerrar() {
                 class="text-xs text-slate-500 bg-slate-50 p-2 rounded border border-slate-100 h-10 flex items-center gap-3"
               >
                 <span>IVA: {{ formulario.iva_porcentaje }}%</span>
-                <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                <label
+                  class="flex items-center gap-1.5 cursor-pointer select-none"
+                >
                   <input
                     v-model="formulario.aplicar_irpf"
                     type="checkbox"
                     class="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
                   />
-                  <span :class="formulario.aplicar_irpf ? '' : 'text-slate-400 line-through'">
+                  <span
+                    :class="
+                      formulario.aplicar_irpf
+                        ? ''
+                        : 'text-slate-400 line-through'
+                    "
+                  >
                     IRPF: {{ formulario.irpf_porcentaje }}%
                   </span>
                 </label>
