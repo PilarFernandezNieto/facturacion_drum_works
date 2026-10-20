@@ -38,6 +38,15 @@ export function useGuardarBolo() {
   });
 }
 
+export function useActualizarBorrador() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, datos }) =>
+      api.put(`facturas/${id}`, datos).then((r) => r.data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
+  });
+}
+
 export function useCambiarEstado() {
   const queryClient = useQueryClient();
   return useMutation({

@@ -38,6 +38,16 @@ const subtitulo = computed(() =>
 );
 
 const mostrarModalBolo = ref(false);
+const facturaEnEdicion = ref(null);
+
+function editarBorrador(factura) {
+  facturaEnEdicion.value = factura;
+  mostrarModalBolo.value = true;
+}
+function cerrarModalBolo() {
+  mostrarModalBolo.value = false;
+  facturaEnEdicion.value = null;
+}
 
 // Filtros de UI
 const filtroMes = ref("");
@@ -236,11 +246,11 @@ async function toggleEstado(factura) {
         class="hidden md:grid md:grid-cols-12 md:gap-2 px-4 py-3 bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider"
       >
         <div class="col-span-2">Código</div>
-        <div class="col-span-4">Cliente / Concepto</div>
+        <div class="col-span-3">Cliente / Concepto</div>
         <div class="col-span-2">Fecha</div>
         <div class="col-span-2">Monto</div>
         <div class="col-span-1">Estado</div>
-        <div class="col-span-1 text-right">Acc.</div>
+        <div class="col-span-2 text-center">Acc.</div>
       </div>
 
       <FacturaComponent
@@ -249,6 +259,7 @@ async function toggleEstado(factura) {
         :factura="factura"
         @toggle-estado="toggleEstado"
         @eliminar="eliminarBorrador"
+        @editar="editarBorrador"
       />
 
       <div v-if="!total" class="px-6 py-12 text-center text-slate-400">
@@ -269,7 +280,8 @@ async function toggleEstado(factura) {
     <!-- Modal factura bolo (solo Serie B) -->
     <ModalFacturaBolo
       v-if="mostrarModalBolo"
-      @close="mostrarModalBolo = false"
+      :factura="facturaEnEdicion"
+      @close="cerrarModalBolo"
     />
   </div>
 </template>

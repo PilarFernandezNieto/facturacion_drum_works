@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FacturaRequest;
 use App\Models\Cliente;
 use App\Models\Factura;
 use App\Models\FacturaEvento;
@@ -90,19 +91,10 @@ class FacturaController extends Controller
     /**
      * Generación manual (principalmente para Serie B - Bolos)
      */
-    public function store(Request $request)
+    public function store(FacturaRequest $request)
     {
-        $datos = $request->validate([
-            'cliente_id' => 'required|exists:clientes,id',
-            'serie' => 'required|in:C,B',
-            'subtotal' => 'required|numeric|min:0|max:999999.99',
-            'iva_porcentaje' => 'required|numeric|min:0|max:100',
-            'irpf_porcentaje' => 'required|numeric|min:0|max:100',
-            'concepto' => 'required|string|max:500',
-            'fecha_evento' => 'nullable|date',
-            'fecha_emision' => 'required|date',
-        ]);
 
+        $datos = $request->validated();
 
         $ivaMonto = ($datos['subtotal'] * $datos['iva_porcentaje']) / 100;
         $irpfMonto = ($datos['subtotal'] * $datos['irpf_porcentaje']) / 100;
@@ -137,6 +129,36 @@ class FacturaController extends Controller
             'mensaje' => 'Borrador de factura creado correctamente',
             'factura' => $factura
         ], 201);
+    }
+
+    public function update(FacturaRequest $request, Factura $factura)
+    {
+        if ($factura->situacion !== Factura::SITUACION_BORRADOR) {
+            return response()->json([
+                'mensaje' => 'Sólo se pueden editar borradores.'
+            ], 409);
+        }
+        $datos = $request->validated();
+        $ivaMonto = ($datos['subtotal'] * $datos['iva_porcentaje']) / 100;
+        $irpfMonto = ($datos['subtotal'] * $datos['irpf_porcentaje']) / 100;
+        $total = $datos['subtotal'] + $ivaMonto - $irpfMonto;
+
+        $factura->update([
+            'cliente_id' => $datos['cliente_id'],
+            'subtotal' => $datos['subtotal'],
+            'iva_porcentaje' => $datos['iva_porcentaje'],
+            'iva_monto' => $ivaMonto,
+            'irpf_porcentaje' => $datos['irpf_porcentaje'],
+            'irpf_monto' => $irpfMonto,
+            'monto' => $total,
+            'concepto' => $datos['concepto'],
+            'fecha_evento' => $datos['fecha_evento'] ?? null,
+            'fecha_emision' => $datos['fecha_emision'],
+        ]);
+        return response()->json([
+            'mensaje' => 'Borrador actualizado correctamente',
+            'factura' => $factura
+        ]);
     }
 
     public function actualizarEstado(Request $request, Factura $factura)
