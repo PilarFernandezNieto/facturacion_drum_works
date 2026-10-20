@@ -105,16 +105,16 @@ async function generarMasiva() {
   }
 }
 
-async function eliminarFactura(id) {
+async function eliminarBorrador(id) {
   const result = await confirmDialog(
-    "¿Eliminar factura?",
-    "¿Estás seguro de eliminar esta factura permanentemente?",
+    "¿Eliminar borrador?",
+    "¿Estás seguro de eliminar este borrador permanentemente?",
     "warning",
   );
   if (!result.isConfirmed) return;
   try {
     await eliminarFn(id);
-    toast("Factura eliminada");
+    toast("Borrador eliminado");
   } catch {
     notifyError("Error", "No se pudo eliminar.");
   }
@@ -248,7 +248,7 @@ async function toggleEstado(factura) {
         :key="factura.id"
         :factura="factura"
         @toggle-estado="toggleEstado"
-        @eliminar="eliminarFactura"
+        @eliminar="eliminarBorrador"
       />
 
       <div v-if="!total" class="px-6 py-12 text-center text-slate-400">

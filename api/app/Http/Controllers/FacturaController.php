@@ -154,6 +154,12 @@ class FacturaController extends Controller
     }
     public function destroy(Factura $factura)
     {
+        if ($factura->situacion !== Factura::SITUACION_BORRADOR) {
+            return response()->json(
+                ['mensaje' => 'Sólo se pueden eliminar borradores. Una factura emitida debe rectificarse.'],
+                409
+            );
+        }
         $factura->update(['borrado' => true]);
         return response()->json(['mensaje' => 'Factura eliminada.']);
     }

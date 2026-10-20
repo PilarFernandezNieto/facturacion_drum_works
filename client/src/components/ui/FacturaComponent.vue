@@ -100,9 +100,10 @@ function formatearFecha(fecha) {
         }}
       </button>
       <button
+        v-if="factura.situacion === 'borrador'"
         @click="emit('eliminar', factura.id)"
         class="text-red-400 hover:text-red-600 transition p-1 rounded hover:bg-red-50"
-        title="Eliminar factura"
+        title="Eliminar borrador"
       >
         <svg
           width="16"
