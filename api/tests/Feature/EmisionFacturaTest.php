@@ -7,6 +7,7 @@ use App\Models\Factura;
 use App\Models\FacturaEvento;
 use App\Models\User;
 use App\Services\EmisionFactura;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -77,5 +78,15 @@ class EmisionFacturaTest extends TestCase
 
         $this->assertSame(1, $segunda->fresh()->numero);
         $this->assertSame(2, $primera->fresh()->numero);
+    }
+    public function test_emitir_pone_la_fecha_de_emision_de_hoy_y_usa_su_anio(): void
+    {
+        $this->travelTo(Carbon::parse('2027-01-02 10:00', 'Europe/Madrid'));
+        $factura = $this->borrador(); // creado con fecha 2026-05-10
+
+        $factura = $this->emision()->emitir($factura, null)->fresh();
+
+        $this->assertSame('2027-01-02', $factura->fecha_emision);
+        $this->assertSame('001B/2027', $factura->codigo);
     }
 }

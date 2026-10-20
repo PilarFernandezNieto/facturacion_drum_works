@@ -31,10 +31,12 @@ class EmisionFactura
             }
 
             $cliente = $factura->cliente;
-            $anio = Carbon::parse($factura->fecha_emision)->year;
+            $hoy = Carbon::now('Europe/Madrid');
+            $anio = $hoy->year;
 
             $factura->update([
                 'numero' => $this->numeracion->siguiente($factura->serie, $anio),
+                'fecha_emision' => $hoy->toDateString(),
                 'situacion' => Factura::SITUACION_EMITIDA,
                 'emitida_at' => now(),
                 'emitida_por' => $userId,

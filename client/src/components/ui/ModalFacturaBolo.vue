@@ -50,9 +50,9 @@ async function guardar() {
     });
     limpiarFormulario();
     emit("close");
-    toast("Factura B generada con éxito");
+    toast("Borrador B generado con éxito");
   } catch {
-    notifyError("Error", "Error al guardar factura de bolo.");
+    notifyError("Error", "Error al crear borrador de bolo.");
   }
 }
 
@@ -226,7 +226,7 @@ function cerrar() {
               type="submit"
               class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold shadow-md shadow-purple-100 transition"
             >
-              Emitir Factura Serie B
+              Crear Borrador Serie B
             </button>
           </div>
         </form>
