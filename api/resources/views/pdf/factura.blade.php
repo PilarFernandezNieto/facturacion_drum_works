@@ -246,9 +246,7 @@
         <hr class="linea-roja">
         <p>
             {{ $factura->concepto }}
-            @if ($factura->fecha_evento)
-                ({{ \Carbon\Carbon::parse($factura->fecha_evento)->format('d/m/Y') }})
-            @endif
+
         </p>
     </div>
 
