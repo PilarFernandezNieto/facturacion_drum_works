@@ -8,7 +8,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(["toggle-estado", "eliminar"]);
+const emit = defineEmits(["toggle-estado", "eliminar", "editar"]);
 
 const { descargarPDF, descargando } = useDescargarPDF();
 
@@ -29,13 +29,18 @@ function formatearFecha(fecha) {
   >
     <!-- Código · col-span-2 -->
     <div class="md:col-span-2">
-      <span class="font-mono font-bold text-slate-900 text-sm">{{
+      <span
+        v-if="factura.situacion === 'borrador'"
+        class="inline-block px-2 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500"
+        >BORRADOR
+      </span>
+      <span v-else class="font-mono font-bold text-slate-900 text-sm">{{
         factura.codigo
       }}</span>
     </div>
 
-    <!-- Cliente / Concepto · col-span-4 -->
-    <div class="md:col-span-4 min-w-0">
+    <!-- Cliente / Concepto · col-span-3 -->
+    <div class="md:col-span-3 min-w-0">
       <div class="font-medium text-slate-800 truncate">
         {{ factura.cliente?.nombre }}
       </div>
@@ -59,21 +64,22 @@ function formatearFecha(fecha) {
 
     <!-- Estado · col-span-1 -->
     <div class="md:col-span-1">
-      <span
+      <button
         @click="emit('toggle-estado', factura)"
+        :disabled="factura.situacion === 'borrador'"
         :class="
           factura.estado === 'pendiente'
             ? 'bg-amber-100 text-amber-700'
             : 'bg-emerald-100 text-emerald-700'
         "
-        class="inline-block px-2 py-1 rounded-full text-xs font-bold cursor-pointer hover:opacity-80 transition whitespace-nowrap"
+        class="inline-block px-2 py-1 rounded-full text-xs font-bold cursor-pointer disabled:cursor-not-allowed hover:opacity-80 transition whitespace-nowrap"
       >
         {{ factura.estado === "pendiente" ? "PDTE" : "PAGADA" }}
-      </span>
+      </button>
     </div>
 
-    <!-- Acciones · col-span-1 -->
-    <div class="md:col-span-1 flex items-center justify-end gap-1">
+    <!-- Acciones · col-span-2 -->
+    <div class="md:col-span-2 flex items-center justify-center gap-1">
       <!-- <a
         target="_blank"
         class="text-purple-600 hover:bg-purple-100 px-2 py-1 rounded border border-principal/20 text-xs font-bold transition"
@@ -81,16 +87,45 @@ function formatearFecha(fecha) {
         PDF
       </a> -->
       <button
-        @click="descargarPDF(factura.id, factura.codigo)"
+        @click="descargarPDF(factura)"
         :disabled="descargando"
         class="text-purple-600 hover:bg-purple-100 px-2 py-1 rounded border border-purple-600/20 text-xs font-bold transition disabled:opacity-50"
       >
-        {{ descargando ? "..." : "PDF" }}
+        {{
+          descargando
+            ? "..."
+            : factura.situacion === "borrador"
+              ? "Emitir PDF"
+              : "PDF"
+        }}
       </button>
       <button
+        v-if="factura.situacion === 'borrador' && factura.serie === 'B'"
+        @click="emit('editar', factura)"
+        class="text-slate-400 hover:text-purple-600 transition p-1 rouded hover:bg-purple-50"
+        title="Editar borrador"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M4 20H8L18.5 9.5C19.3 8.7 19.3 7.4 18.5 6.6L17.4 5.5C16.6 4.7 15.3 4.7 14.5 5.5L4 16V20Z M13.5 6.5L17.5 10.5"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <button
+        v-if="factura.situacion === 'borrador'"
         @click="emit('eliminar', factura.id)"
         class="text-red-400 hover:text-red-600 transition p-1 rounded hover:bg-red-50"
-        title="Eliminar factura"
+        title="Eliminar borrador"
       >
         <svg
           width="16"

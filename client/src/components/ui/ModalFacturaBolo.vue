@@ -1,13 +1,25 @@
 <script setup>
 import { reactive, computed } from "vue";
 import { useClientes } from "@/composables/useClientes";
-import { useGuardarBolo } from "@/composables/useFacturas";
+import {
+  useGuardarBolo,
+  useActualizarBorrador,
+} from "@/composables/useFacturas";
 import { notifyError, toast } from "@/utils/swal";
 
 const emit = defineEmits(["close"]);
+const props = defineProps({
+  factura: {
+    type: Object,
+    default: null,
+  },
+});
+
+const esEdicion = computed(() => props.factura !== null);
 
 const { clientes } = useClientes();
 const { mutateAsync: guardarBolo } = useGuardarBolo();
+const { mutateAsync: actualizarBorrador } = useActualizarBorrador();
 
 const formulario = reactive({
   cliente_id: "",
@@ -19,11 +31,25 @@ const formulario = reactive({
   fecha_evento: "",
   fecha_emision: new Date().toISOString().split("T")[0],
 });
+if (props.factura) {
+  formulario.cliente_id = props.factura.cliente_id;
+  formulario.subtotal = props.factura.subtotal;
+  formulario.iva_porcentaje = props.factura.iva_porcentaje;
+  formulario.aplicar_irpf = Number(props.factura.irpf_porcentaje) > 0;
+  if (formulario.aplicar_irpf) {
+    formulario.irpf_porcentaje = props.factura.irpf_porcentaje;
+  }
+  formulario.concepto = props.factura.concepto;
+  formulario.fecha_evento = props.factura.fecha_evento ?? "";
+  formulario.fecha_emision = props.factura.fecha_emision;
+}
 
 const totalBolo = computed(() => {
   const base = parseFloat(formulario.subtotal) || 0;
   const iva = (base * formulario.iva_porcentaje) / 100;
-  const irpf = formulario.aplicar_irpf ? (base * formulario.irpf_porcentaje) / 100 : 0;
+  const irpf = formulario.aplicar_irpf
+    ? (base * formulario.irpf_porcentaje) / 100
+    : 0;
   return (base + iva - irpf).toFixed(2);
 });
 
@@ -41,16 +67,27 @@ function limpiarFormulario() {
 }
 
 async function guardar() {
+  const datos = {
+    ...formulario,
+    irpf_porcentaje: formulario.aplicar_irpf ? formulario.irpf_porcentaje : 0,
+  };
   try {
-    await guardarBolo({
-      ...formulario,
-      irpf_porcentaje: formulario.aplicar_irpf ? formulario.irpf_porcentaje : 0,
-    });
+    if (esEdicion.value) {
+      await actualizarBorrador({ id: props.factura.id, datos });
+      toast("Borrador actualizado");
+    } else {
+      await guardarBolo(datos);
+      toast("Borrador B generado con éxito");
+    }
     limpiarFormulario();
     emit("close");
-    toast("Factura B generada con éxito");
   } catch {
-    notifyError("Error", "Error al guardar factura de bolo.");
+    notifyError(
+      "Error",
+      esEdicion.valu
+        ? "No se pudo actualizar el borrador"
+        : "Error al crear el borrador",
+    );
   }
 }
 
@@ -72,7 +109,11 @@ function cerrar() {
         class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-2xl shrink-0"
       >
         <h3 class="text-xl font-bold text-slate-800">
-          Nueva Factura de Bolo (Serie B)
+          {{
+            esEdicion
+              ? "Editar borrador (serie B)"
+              : "Nueva factura de Bolo (Serie B)"
+          }}
         </h3>
         <button
           @click="cerrar"
@@ -119,7 +160,7 @@ function cerrar() {
             <!-- Concepto -->
             <div class="col-span-12">
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Concepto del Concierto
+                Concepto
               </label>
               <textarea
                 v-model="formulario.concepto"
@@ -133,7 +174,7 @@ function cerrar() {
             <!-- Fecha evento -->
             <div class="col-span-12 lg:col-span-6">
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Fecha del Concierto
+                Fecha
               </label>
               <input
                 v-model="formulario.fecha_evento"
@@ -179,13 +220,21 @@ function cerrar() {
                 class="text-xs text-slate-500 bg-slate-50 p-2 rounded border border-slate-100 h-10 flex items-center gap-3"
               >
                 <span>IVA: {{ formulario.iva_porcentaje }}%</span>
-                <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                <label
+                  class="flex items-center gap-1.5 cursor-pointer select-none"
+                >
                   <input
                     v-model="formulario.aplicar_irpf"
                     type="checkbox"
                     class="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
                   />
-                  <span :class="formulario.aplicar_irpf ? '' : 'text-slate-400 line-through'">
+                  <span
+                    :class="
+                      formulario.aplicar_irpf
+                        ? ''
+                        : 'text-slate-400 line-through'
+                    "
+                  >
                     IRPF: {{ formulario.irpf_porcentaje }}%
                   </span>
                 </label>
@@ -216,7 +265,11 @@ function cerrar() {
               type="submit"
               class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold shadow-md shadow-purple-100 transition"
             >
-              Emitir Factura Serie B
+              {{
+                esEdicion
+                  ? "Guardar Cambios del borrador"
+                  : "Crear Borrador Serie B"
+              }}
             </button>
           </div>
         </form>

@@ -38,6 +38,16 @@ const subtitulo = computed(() =>
 );
 
 const mostrarModalBolo = ref(false);
+const facturaEnEdicion = ref(null);
+
+function editarBorrador(factura) {
+  facturaEnEdicion.value = factura;
+  mostrarModalBolo.value = true;
+}
+function cerrarModalBolo() {
+  mostrarModalBolo.value = false;
+  facturaEnEdicion.value = null;
+}
 
 // Filtros de UI
 const filtroMes = ref("");
@@ -60,13 +70,20 @@ const facturasFiltradas = computed(() => {
   return (facturas.value ?? [])
     .filter((f) => {
       if (f.serie !== serie.value) return false;
-      const matchEstado = !filtroEstado.value || f.estado === filtroEstado.value;
+      const matchEstado =
+        !filtroEstado.value || f.estado === filtroEstado.value;
       const d = new Date(f.fecha_emision);
       const mesAnio = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       const matchMes = !filtroMes.value || mesAnio === filtroMes.value;
       return matchEstado && matchMes;
     })
-    .sort((a, b) => b.numero - a.numero);
+    .sort((a, b) => {
+      // Borradores primero (más reciente arriba), después, las emitidas por número
+      if (a.numero == null && b.numero == null) return b.id - a.id;
+      if (a.numero == null) return -1;
+      if (b.numero == null) return 1;
+      return b.numero - a.numero;
+    });
 });
 
 const { paginado, pagina, totalPaginas, paginas, desde, hasta, total, irA } =
@@ -98,16 +115,16 @@ async function generarMasiva() {
   }
 }
 
-async function eliminarFactura(id) {
+async function eliminarBorrador(id) {
   const result = await confirmDialog(
-    "¿Eliminar factura?",
-    "¿Estás seguro de eliminar esta factura permanentemente?",
+    "¿Eliminar borrador?",
+    "¿Estás seguro de eliminar este borrador permanentemente?",
     "warning",
   );
   if (!result.isConfirmed) return;
   try {
     await eliminarFn(id);
-    toast("Factura eliminada");
+    toast("Borrador eliminado");
   } catch {
     notifyError("Error", "No se pudo eliminar.");
   }
@@ -229,11 +246,11 @@ async function toggleEstado(factura) {
         class="hidden md:grid md:grid-cols-12 md:gap-2 px-4 py-3 bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider"
       >
         <div class="col-span-2">Código</div>
-        <div class="col-span-4">Cliente / Concepto</div>
+        <div class="col-span-3">Cliente / Concepto</div>
         <div class="col-span-2">Fecha</div>
         <div class="col-span-2">Monto</div>
         <div class="col-span-1">Estado</div>
-        <div class="col-span-1 text-right">Acc.</div>
+        <div class="col-span-2 text-center">Acc.</div>
       </div>
 
       <FacturaComponent
@@ -241,7 +258,8 @@ async function toggleEstado(factura) {
         :key="factura.id"
         :factura="factura"
         @toggle-estado="toggleEstado"
-        @eliminar="eliminarFactura"
+        @eliminar="eliminarBorrador"
+        @editar="editarBorrador"
       />
 
       <div v-if="!total" class="px-6 py-12 text-center text-slate-400">
@@ -262,7 +280,8 @@ async function toggleEstado(factura) {
     <!-- Modal factura bolo (solo Serie B) -->
     <ModalFacturaBolo
       v-if="mostrarModalBolo"
-      @close="mostrarModalBolo = false"
+      :factura="facturaEnEdicion"
+      @close="cerrarModalBolo"
     />
   </div>
 </template>

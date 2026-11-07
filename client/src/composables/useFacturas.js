@@ -1,8 +1,15 @@
 import { ref } from "vue";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import api from "@/api/axios";
+import { confirmDialog } from "@/utils/swal";
 
 const QUERY_KEY = ["facturas"];
+
+function nombreDesdeCabecera(respuesta, porDefecto) {
+  const cabecera = respuesta.headers["content-disposition"] ?? "";
+  const coincidencia = cabecera.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+  return coincidencia ? decodeURIComponent(coincidencia[1]) : porDefecto;
+}
 
 export function useFacturas() {
   const { data, isLoading } = useQuery({
@@ -27,6 +34,15 @@ export function useGuardarBolo() {
   return useMutation({
     mutationFn: (datos) =>
       api.post("facturas", { ...datos, serie: "B" }).then((r) => r.data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
+  });
+}
+
+export function useActualizarBorrador() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, datos }) =>
+      api.put(`facturas/${id}`, datos).then((r) => r.data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEY }),
   });
 }
@@ -66,10 +82,21 @@ export function useEliminarFactura() {
 }
 
 export function useDescargarPDF() {
+  const queryClient = useQueryClient();
   const descargando = ref(false);
 
-  async function descargarPDF(id, codigo) {
+  async function descargarPDF(factura) {
+    if (factura.situacion === "borrador") {
+      const resultado = await confirmDialog(
+        "Emitir factura",
+        "Al descargar la factura esta factura se emitirá. Esta acción no se puede deshacer. ¿Continuar?",
+        "warning",
+      );
+      if (!resultado.isConfirmed) return;
+    }
+    const id = factura.id;
     descargando.value = true;
+
     try {
       const respuesta = await api.get(`facturas/${id}/pdf`, {
         responseType: "blob",
@@ -77,11 +104,13 @@ export function useDescargarPDF() {
       const url = window.URL.createObjectURL(respuesta.data);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `FRA ${codigo.replace("/", "-")}.pdf`;
+      link.download = nombreDesdeCabecera(respuesta, `factura-${id}.pdf`);
       link.click();
       window.URL.revokeObjectURL(url);
     } finally {
       descargando.value = false;
+
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     }
   }
 
@@ -89,23 +118,35 @@ export function useDescargarPDF() {
 }
 
 export function useDescargarPDFMasivo() {
+  const queryClient = useQueryClient();
   const descargando = ref(false);
 
   async function descargarMasivo(facturas, nombreZip = "facturas.zip") {
     if (!facturas.length) return;
+    const borradores = facturas.filter((f) => f.situacion === "borrador");
+    if (borradores.length > 0) {
+      const resultado = await confirmDialog(
+        "Emitir facturas",
+        `Al descargar este archivo se van a emitir ${borradores.length} facturas. Esta acción no se puede deshacer. ¿Continuas?`,
+        "warning",
+      );
+      if (!resultado.isConfirmed) return;
+    }
+
     descargando.value = true;
     try {
       const { default: JSZip } = await import("jszip");
       const zip = new JSZip();
 
-      await Promise.all(
-        facturas.map(async (f) => {
-          const resp = await api.get(`facturas/${f.id}/pdf`, {
-            responseType: "blob",
-          });
-          zip.file(`FRA ${f.codigo.replace("/", "-")}.pdf`, resp.data);
-        }),
-      );
+      // Se emiten por orden de creación para que la numeración siga ese orden
+
+      const ordenDeCreacion = [...facturas].sort((a, b) => a.id - b.id);
+      for (const f of ordenDeCreacion) {
+        const resp = await api.get(`facturas/${f.id}/pdf`, {
+          responseType: "blob",
+        });
+        zip.file(nombreDesdeCabecera(resp, `factura-${f.id}.pdf`), resp.data);
+      }
 
       const blob = await zip.generateAsync({ type: "blob" });
       const url = window.URL.createObjectURL(blob);
@@ -116,6 +157,7 @@ export function useDescargarPDFMasivo() {
       window.URL.revokeObjectURL(url);
     } finally {
       descargando.value = false;
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     }
   }
 
